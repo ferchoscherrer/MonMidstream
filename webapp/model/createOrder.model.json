@@ -1,0 +1,16 @@
+{
+    "oQuery":{
+        "stimateNumber": "",
+        "request": "",
+        "salesOrganization": "",
+        "channel": "",
+        "factor": "",
+        "currency": ""
+    },
+    "testData":[
+        {
+            "cod": "1263",
+            "nameOrder": "testData"
+        }
+    ]
+}

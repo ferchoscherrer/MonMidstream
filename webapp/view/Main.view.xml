@@ -1,6 +1,15 @@
 <mvc:View controllerName="com.triiari.retrobilling.controller.Main"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
-    </Page>
+    xmlns="sap.m"
+    height="100%">
+    <IconTabBar stretchContentHeight="true" headerMode="Inline" expandable="false" >
+        <items>
+            <IconTabFilter key="createOrder" design="Horizontal" icon="sap-icon://create"  text="{i18n>createOrder}" textDirection="RTL">
+                <mvc:XMLView viewName="com.triiari.retrobilling.view.CreateOrder" height="100%"/>
+            </IconTabFilter>
+            <IconTabFilter key="modifyOrder" design="Horizontal" icon="sap-icon://write-new-document" text="Modificar Pedido" textDirection="LTR" >
+                <!-- <mvc:XMLView/> -->
+            </IconTabFilter>
+        </items>
+    </IconTabBar>
 </mvc:View>

@@ -1,0 +1,53 @@
+<mvc:View controllerName="com.triiari.retrobilling.controller.CreateOrder"
+    displayBlock="true"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <Page id="pgCreateOrder" backgroundDesign="List" floatingFooter="true" showHeader="false" enableScrolling="true" >
+        <content>
+            <f:SimpleForm 
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="2"
+                labelSpanL="2"
+                labelSpanM="3"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="7"
+                emptySpanL="2"
+                emptySpanM="2"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1"
+                singleContainerFullSize="false" >
+                <f:content>
+                    <core:Title/>
+                    <Label text="{i18n>stimateNumber}" labelFor="iptStimateNumber" required="true" />
+                    <Input id="iptStimateNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/stimateNumber}" valueHelpRequest="onOpenPopUpStimateNumber" />
+                    <Label text="{i18n>request}" />
+                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/request}" valueHelpRequest="onOpenPopUpRequest"/>
+                    <Label text="{i18n>salesOrganization}" />
+                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/salesOrganization}" valueHelpRequest="onOpenPopUpSalesOrganization" />
+                    <Label text="{i18n>channel}" />
+                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/>
+                    <Label text="{i18n>factor}" />
+                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/factor}" valueHelpRequest="onOpenPopUpFactor"/>
+                    <Label text="{i18n>currency}" />
+                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/currency}" valueHelpRequest="onOpenPopUpCurrency" />
+                    <core:Title/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <footer>
+			<Bar>
+				<contentRight>
+                    <Button type="Accept" text="Accept"/>
+                    <Button type="Reject" text="Reject"/>
+				</contentRight>
+			</Bar>
+		</footer>
+    </Page>
+</mvc:View>

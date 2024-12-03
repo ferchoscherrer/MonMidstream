@@ -8,6 +8,9 @@ export default class Component extends BaseComponent {
 
 	public static metadata = {
 		manifest: "json",
+        config: { 
+            fullWidth: true 
+        },
         interfaces: [
             "sap.ui.core.IAsyncContentCreation"
         ]
