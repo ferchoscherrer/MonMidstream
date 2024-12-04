@@ -89,12 +89,25 @@
           "target": [
             "TargetMain"
           ]
+        },
+        {
+          "name": "RouteDetailSalesOrder",
+          "pattern": "detail/{estimationNumber}",
+          "target": [
+            "TargetDetailSalesOrder"
+          ]
         }
       ],
       "targets": {
         "TargetMain": {
           "id": "Main",
-          "name": "Main"
+          "name": "Main",
+          "level": 1
+        },
+        "TargetDetailSalesOrder": {
+          "id": "DetailSalesDocument",
+          "name": "DetailSalesDocument",
+          "level": 2
         }
       }
     },

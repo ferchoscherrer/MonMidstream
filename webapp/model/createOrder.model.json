@@ -1,12 +1,106 @@
 {
     "oQuery":{
-        "stimateNumber": "",
+        "estimationNumber": "",
         "request": "",
         "salesOrganization": "",
         "channel": "",
         "factor": "",
         "currency": ""
     },
+    "oDetailSalesDocument": {
+        "dateOrder": "Noviembre 22, 2024",
+        "items": [
+            {
+                "ItmNumber": 10,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "500.00",
+                "TargetVal" : "699.00"
+            },
+            {
+                "ItmNumber": 30,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            },
+            {
+                "ItmNumber": 40,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "500.00",
+                "TargetVal" : "699.00"
+            },
+            {
+                "ItmNumber": 50,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            },
+            {
+                "ItmNumber": 60,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "500.00",
+                "TargetVal" : "699.00"
+            },
+            {
+                "ItmNumber": 70,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            },
+            {
+                "ItmNumber": 80,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            },
+            {
+                "ItmNumber": 90,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "500.00",
+                "TargetVal" : "699.00"
+            },
+            {
+                "ItmNumber": 100,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            },
+            {
+                "ItmNumber": 110,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "500.00",
+                "TargetVal" : "699.00"
+            },
+            {
+                "ItmNumber": 120,
+                "Material" : "Titanium",
+                "TargetQty" : 1,
+                "Currency" : "USD",
+                "NetValue" : "300.00",
+                "TargetVal" : "499.00"
+            }
+        ]
+    },
+    "oSelectEstimationNumber" : null,
     "testData":[
         {
             "cod": "1263",

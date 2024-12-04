@@ -1,32 +1,46 @@
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Dialog from "sap/m/Dialog";
 import { SelectDialog$SearchEvent } from "sap/m/SelectDialog";
+import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
+import Router from "sap/ui/core/routing/Router";
+import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ResourceModel from "sap/ui/model/resource/ResourceModel";
 
 /**
  * @namespace com.triiari.retrobilling.controller
  */
+
 export default class CreateOrder extends Controller {
-    private oMainModel: JSONModel;
-    private oFragmentStimateNumber: Dialog;
+    
+    private oCreateOrderModel: JSONModel;
+    private oI18nModel: ResourceModel;
+    private oI18n: ResourceBundle;
+    private oFragmentEstimationNumber: Dialog;
+    private oRouter: Router;
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
-        this.oMainModel = this.getOwnerComponent()?.getModel("mCreateOrder") as JSONModel;
+        this.oCreateOrderModel = this.getOwnerComponent()?.getModel("mCreateOrder") as JSONModel;
+        this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
+        this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
+        this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
     }
 
-    public async onOpenPopUpStimateNumber(): Promise<void> {
-        this.oFragmentStimateNumber ??= await Fragment.load({
+    public async onOpenPopUpEstimationNumber(): Promise<void> {
+        this.oFragmentEstimationNumber ??= await Fragment.load({
             id: this.getView()?.getId(),
-            name: "com.triiari.retrobilling.view.fragment.SelectDialogStimateNumber",
+            name: "com.triiari.retrobilling.view.fragment.SelectDialogEstimationNumber",
             controller: this,
         }) as Dialog;
-
-        this.oFragmentStimateNumber.open();
+        
+        this.getView()?.addDependent(this.oFragmentEstimationNumber);
+        this.oFragmentEstimationNumber.open();
     }
 
-    public onSearchListStimateNumber(oEvent: SelectDialog$SearchEvent): void {
+    public onSearchEstimationNumber(oEvent: TableSelectDialog$SearchEvent): void {
         let sValue: string = oEvent.getParameter("value") || "";
         // let arrFilters = [
         //     new Filter("Bukrs", FilterOperator.EQ, this.Customer.getBukrs()),
@@ -37,5 +51,34 @@ export default class CreateOrder extends Controller {
         // ];
         // let oBinding = oEvent.getSource().getBinding("items");
         // oBinding.filter(arrFilters);
+    }
+
+    public onSelectEstimationNumber( oEvent: TableSelectDialog$ConfirmEvent ): void {
+        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+        let oSlctEstimationNumber =  this.oCreateOrderModel.getProperty('/oSelectEstimationNumber');
+        // TODO: Crear funcionalidad de seleccion de datos por medio de un oData
+        for (const oSelectEstimationNumber of oSelectedContext) {
+            this.oCreateOrderModel.setProperty('/oSelectEstimationNumber', oSelectEstimationNumber);
+        }
+        // Si el Odata no arroja ningun valor al seleccionar el numero de estimacion, se muestra mensaje de error  
+        if (oSlctEstimationNumber.length === 0 ) throw new Error(this.oI18n.getText("errorEstimationNumber"));
+        
+        
+        // let oSelectedContex = oEvent.getParameter("selectedContexts"),
+        //         that = this;
+        //     if (oSelectedContex) {
+        //         oSelectedContex.forEach(oSelect => {
+        //             that.idValueHelpsBrand.setValue(oSelect.getObject().VtextSpart);
+        //             that.setsLand1(oSelect.getObject().Land1);
+        //             that.setSpart(oSelect.getObject().Spart)
+        //             that.setsVtextSpart(oSelect.getObject().VtextSpart)
+        //         });
+        //     }
+    }
+
+    public onOpenDetailSalesDocument(): void {
+        this.oRouter.navTo("RouteDetailSalesOrder", {
+            estimationNumber: "112312"
+        })
     }
 }

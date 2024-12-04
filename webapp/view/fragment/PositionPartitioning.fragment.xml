@@ -1,0 +1,91 @@
+<core:FragmentDefinition xmlns:rowmodes="sap.ui.table.rowmodes" xmlns:table="sap.ui.table"
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+    <Dialog 
+        showHeader="false"
+        contentHeight="55%"
+        contentWidth="60%"
+        draggable="true"
+        resizable="true"
+        afterClose=".oAfterClosenPositionPartitioning">
+        <Page 
+            showHeader="true" 
+            showFooter="true"
+            showSubHeader="true"
+            title="{i18n>newPositions}"
+            class="sapUiResponsivePadding--content">
+            <subHeader>
+                <OverflowToolbar style="Clear">
+                    <FlexBox width="100%" justifyContent="Start">
+                        <GenericTag text="{i18n>originalAmountPosition}" status="Success" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="699" unit="MXN" />
+                        </GenericTag>
+                        <GenericTag text="{i18n>amountAssigned}" status="Information" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="800" unit="MXN" />
+                        </GenericTag>
+                        <GenericTag text="{i18n>originalOverrunAmount}" status="Error" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="101" unit="MXN" />
+                        </GenericTag>
+                    </FlexBox>
+                </OverflowToolbar>
+            </subHeader>
+            <content>
+                <table:Table 
+                    class="sapUiSmallMarginTop" 
+                    rows="{temp>/partitions}"
+                    alternateRowColors="true"
+                    selectionMode="None" >
+                    <table:rowMode>
+                        <rowmodes:Auto />
+                    </table:rowMode>
+                    <table:columns>
+                        <table:Column >
+                            <Label text="{i18n>pos}" />
+                            <table:template>
+                                <Text wrapping="false" text="{temp>pos}"/>
+                            </table:template>
+                        </table:Column>
+                        <table:Column >
+                            <Label text="{i18n>material}" />
+                            <table:template>
+                                <Text wrapping="false" text="{temp>material}"/>
+                            </table:template>
+                        </table:Column>
+                        <table:Column >
+                            <Label text="{i18n>quantity}" />
+                            <table:template>
+                                <Text wrapping="false" text="{temp>quantity}"/>
+                            </table:template>
+                        </table:Column>
+                        <table:Column >
+                            <Label text="{i18n>umb}" />
+                            <table:template>
+                                <Text wrapping="false" text="{temp>unit}"/>
+                            </table:template>
+                        </table:Column>
+                        <table:Column >
+                            <Label text="{i18n>amount}" />
+                            <table:template>
+                                <Input value="{temp>amount}"/>
+                            </table:template>
+                        </table:Column>
+                    </table:columns>
+                    <table:noData>
+                        <IllustratedMessage
+                            illustrationType="sapIllus-SimpleNotFoundMagnifier"
+                            enableVerticalResponsiveness="true"
+                            title="{i18n>noResults}"
+                            description="{i18n>noResultsDesc}"/>
+                    </table:noData>
+                </table:Table>
+            </content>
+            <footer>
+                <OverflowToolbar>
+                    <ToolbarSpacer />
+                    <Button text="{i18n>divide}" type="Accept" icon="sap-icon://split" press=".onPositionPartitioning" />
+                    <Button text="{i18n>cancel}" type="Reject" icon="sap-icon://reset" press=".onClosenPositionPartitioning"/>
+                </OverflowToolbar>
+            </footer>
+        </Page>
+    </Dialog>
+</core:FragmentDefinition>

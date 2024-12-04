@@ -25,8 +25,8 @@
                 singleContainerFullSize="false" >
                 <f:content>
                     <core:Title/>
-                    <Label text="{i18n>stimateNumber}" labelFor="iptStimateNumber" required="true" />
-                    <Input id="iptStimateNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/stimateNumber}" valueHelpRequest="onOpenPopUpStimateNumber" />
+                    <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
+                    <Input id="iptEstimationNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" />
                     <Label text="{i18n>request}" />
                     <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/request}" valueHelpRequest="onOpenPopUpRequest"/>
                     <Label text="{i18n>salesOrganization}" />
@@ -44,8 +44,8 @@
         <footer>
 			<Bar>
 				<contentRight>
-                    <Button type="Accept" text="Accept"/>
-                    <Button type="Reject" text="Reject"/>
+                    <Button id="btnDescestimationNumber" type="Accept" text="{i18n>create}" press="onOpenDetailSalesDocument"  />
+                    <Button type="Reject" text="{i18n>cancel}"/>
 				</contentRight>
 			</Bar>
 		</footer>
