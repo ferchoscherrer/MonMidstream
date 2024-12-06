@@ -4,8 +4,13 @@
         "request": "",
         "salesOrganization": "",
         "channel": "",
-        "factor": "",
+        "iFactor": null,
         "currency": ""
+    },
+    "oConfig" : {
+        "oAcctionTblItemSalesDocument":{
+            "enabled": false
+        }
     },
     "oDetailSalesDocument": {
         "dateOrder": "Noviembre 22, 2024",
@@ -106,5 +111,26 @@
             "cod": "1263",
             "nameOrder": "testData"
         }
+    ],
+    "request":[
+        {
+            "document": "10245212",
+            "name": "Jhon"
+        }
+    ],
+    "salesOrganization":[
+        {
+            "document": "21551",
+            "name": "Mexico DC"
+        }
+    ],
+    "channel":[
+        {
+            "document": "25",
+            "name": "Chiapas"
+        }
+    ],
+    "currency":[
+        {"currency": "USD"}
     ]
 }

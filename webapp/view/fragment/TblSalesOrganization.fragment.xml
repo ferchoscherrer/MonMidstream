@@ -3,18 +3,18 @@
 	xmlns:core="sap.ui.core">
     <TableSelectDialog
 		noDataText="{i18n>noData}"
-		title="{i18n>estimationNumber}"
-		search=".onSearchestimationNumber"
-		confirm=".onSelectestimationNumber"
+		title="{i18n>salesOrganization}"
+		search=".onSearchSalesOrganization"
+		confirm=".onSelectSalesOrganization"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/testData'}"
+		items= "{path : 'mCreateOrder>/salesOrganization'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>cod}"/>
-                <Text text="{mCreateOrder>nameOrder}"/>
+                <Text text="{mCreateOrder>document}"/>
+                <Text text="{mCreateOrder>name}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>

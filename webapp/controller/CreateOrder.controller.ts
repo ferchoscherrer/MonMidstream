@@ -8,6 +8,10 @@ import Router from "sap/ui/core/routing/Router";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import formatter from "../model/formatter";
+import Input from "sap/m/Input";
+import { Input$ChangeEvent } from "sap/ui/webc/main/Input";
+import { InputBase$ChangeEvent } from "sap/m/InputBase";
 
 /**
  * @namespace com.triiari.retrobilling.controller
@@ -19,7 +23,12 @@ export default class CreateOrder extends Controller {
     private oI18nModel: ResourceModel;
     private oI18n: ResourceBundle;
     private oFragmentEstimationNumber: Dialog;
+    private oFragmentRequest: Dialog;
+    private oFragmentSalesOrganization: Dialog;
+    private oFragmentChannel: Dialog;
+    private oFragmentCurrency: Dialog;
     private oRouter: Router;
+    public formater = formatter;
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
@@ -74,6 +83,91 @@ export default class CreateOrder extends Controller {
         //             that.setsVtextSpart(oSelect.getObject().VtextSpart)
         //         });
         //     }
+    }
+
+    public async onOpenPopUpRequest(): Promise<void> {
+        this.oFragmentRequest ??= await Fragment.load({
+            id: this.getView()?.getId(),
+            name: "com.triiari.retrobilling.view.fragment.TblSelectDialogRequest",
+            controller: this,
+        }) as Dialog;
+        
+        this.getView()?.addDependent(this.oFragmentRequest);
+        this.oFragmentRequest.open();
+    }
+
+    public onSearchRequest(oEvent: TableSelectDialog$SearchEvent): void {
+        let sValue: string = oEvent.getParameter("value") || "";
+    }
+
+    public onSelectRequest( oEvent: TableSelectDialog$ConfirmEvent ): void {
+        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+    }
+
+    public async onOpenPopUpSalesOrganization(): Promise<void> {
+        this.oFragmentSalesOrganization ??= await Fragment.load({
+            id: this.getView()?.getId(),
+            name: "com.triiari.retrobilling.view.fragment.TblSalesOrganization",
+            controller: this,
+        }) as Dialog;
+        
+        this.getView()?.addDependent(this.oFragmentSalesOrganization);
+        this.oFragmentSalesOrganization.open();
+    }
+
+    public onSearchSalesOrganization(oEvent: TableSelectDialog$SearchEvent): void {
+        let sValue: string = oEvent.getParameter("value") || "";
+    }
+
+    public onSelectSalesOrganization( oEvent: TableSelectDialog$ConfirmEvent ): void {
+        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+    }
+
+    public async onOpenPopUpChannel(): Promise<void> {
+        this.oFragmentChannel ??= await Fragment.load({
+            id: this.getView()?.getId(),
+            name: "com.triiari.retrobilling.view.fragment.TblSelectDialogChannel",
+            controller: this,
+        }) as Dialog;
+        
+        this.getView()?.addDependent(this.oFragmentChannel);
+        this.oFragmentChannel.open();
+    }
+
+    public onSearchChannel(oEvent: TableSelectDialog$SearchEvent): void {
+        let sValue: string = oEvent.getParameter("value") || "";
+    }
+
+    public onSelectChannel( oEvent: TableSelectDialog$ConfirmEvent ): void {
+        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+    }
+
+    public async onOpenPopUpCurrency(): Promise<void> {
+        this.oFragmentCurrency ??= await Fragment.load({
+            id: this.getView()?.getId(),
+            name: "com.triiari.retrobilling.view.fragment.TblSelectDialogCurrency",
+            controller: this,
+        }) as Dialog;
+        
+        this.getView()?.addDependent(this.oFragmentCurrency);
+        this.oFragmentCurrency.open();
+    }
+
+    public onSearchCurrency(oEvent: TableSelectDialog$SearchEvent): void {
+        let sValue: string = oEvent.getParameter("value") || "";
+    }
+
+    public onSelectCurrency( oEvent: TableSelectDialog$ConfirmEvent ): void {
+        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+    }
+
+    public onChangeFormatterNumber (oEvent: InputBase$ChangeEvent) : void{
+        const oSource = oEvent.getSource();
+        const oBinding = oSource.getBinding('value');
+        const sPath = oBinding?.getPath() || '';
+        const sValue = oEvent.getParameter("value") || "";
+        const sReplaceVale = sValue.replace(/[^0-9,.]/g,'');
+        this.oCreateOrderModel.setProperty(sPath,sReplaceVale);
     }
 
     public onOpenDetailSalesDocument(): void {

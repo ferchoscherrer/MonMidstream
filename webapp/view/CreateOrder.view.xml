@@ -28,15 +28,26 @@
                     <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
                     <Input id="iptEstimationNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" />
                     <Label text="{i18n>request}" />
-                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/request}" valueHelpRequest="onOpenPopUpRequest"/>
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/request}" valueHelpRequest="onOpenPopUpRequest"/>
                     <Label text="{i18n>salesOrganization}" />
-                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/salesOrganization}" valueHelpRequest="onOpenPopUpSalesOrganization" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/salesOrganization}" valueHelpRequest="onOpenPopUpSalesOrganization" />
                     <Label text="{i18n>channel}" />
-                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/>
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/>
                     <Label text="{i18n>factor}" />
-                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/factor}" valueHelpRequest="onOpenPopUpFactor"/>
+                    <Input value="{
+                            path: 'mCreateOrder>/oQuery/iFactor',
+                            type:'sap.ui.model.type.Float',
+                            formatOptions: {
+                                groupingSeparator: '.',
+                                decimalSeparator: ','
+                            }
+                        
+                        }" 
+                        change="onChangeFormatterNumber"
+                    
+                     />
                     <Label text="{i18n>currency}" />
-                    <Input editable="false" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/currency}" valueHelpRequest="onOpenPopUpCurrency" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/currency}" valueHelpRequest="onOpenPopUpCurrency" />
                     <core:Title/>
                 </f:content>
             </f:SimpleForm>

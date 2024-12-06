@@ -1,141 +1,172 @@
-<mvc:View xmlns:rowmodes="sap.ui.table.rowmodes" controllerName="com.triiari.retrobilling.controller.DetailSalesDocument."
+<mvc:View xmlns:f="sap.f" xmlns:rowmodes="sap.ui.table.rowmodes" controllerName="com.triiari.retrobilling.controller.DetailSalesDocument."
     displayBlock="true"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-	xmlns:f="sap.ui.layout.form"
+	xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
     xmlns:t="sap.ui.table" 
-    xmlns:l="sap.ui.layout"
->
-    <Page backgroundDesign="List" floatingFooter="true" showHeader="false" enableScrolling="true" >
-        <content>
-            <f:SimpleForm 
-                editable="true"
-                layout="ResponsiveGridLayout"
-                labelSpanXL="2"
-                labelSpanL="2"
-                labelSpanM="3"
-                labelSpanS="12"
-                adjustLabelSpan="false"
-                emptySpanXL="7"
-                emptySpanL="2"
-                emptySpanM="2"
-                emptySpanS="0"
-                columnsXL="2"
-                columnsL="2"
-                columnsM="2"
-                singleContainerFullSize="false" >
-                <f:content>
-                    <core:Title text="{i18n>detailOrder}"/>
-                    <Label text="{i18n>order}"/>
-                    <Text text="" />
-                    <Label text="{i18n>stimate}" />
-                    <Text text="10045276" />
-                    <Label text="{i18n>dateOrder}" />
-                    <Text 
-                        text="{
-                            path:'/mCreateOrder>/oDetailSalesDocument/dateOrder',
-                            type: 'sap.ui.model.type.Date',
-                            formatOptions:{
-                                style: 'long'
-                            }
-                        }" 
-                    />
-                    <Label text="{i18n>request}" />
-                    <Text text="54400054" />
-                    <Label text="{i18n>recipient}" />
-                    <Text text="14000001"/>
-                    <Label text="{i18n>orderNoCustomer}" />
-                    <Text text="ES70_NOV21_US_Q1" />
-                    <core:Title text="{i18n>confiDetail}" />
-                    <Label text="{i18n>classOrder}" />
-                    <Text text="ZTB1" />
-                    <Label text="{i18n>salesOrganization}" />
-                    <Text text="1000"/>
-                    <Label text="{i18n>salesArea}" />
-                    <Text text="20"/>
-                    <Label text="{i18n>sector}" />
-                    <Text text="10"/>
-                    <Label text="{i18n>factor}" />
-                    <Text text=".1973"/>
-                </f:content>
-                
-            </f:SimpleForm>
-            <!-- <f:SimpleForm >
-                <f:content> -->
-                    <t:Table 
-                        rows="{path: 'mCreateOrder>/oDetailSalesDocument/items'}"
-                        selectionMode="MultiToggle"
-                    >
-                    <t:layoutData>
-                        <l:GridData span="L2 M2 S2" />
-                    </t:layoutData>
-                    <t:rowMode>
-                        <rowmodes:Auto  />
-                    </t:rowMode>
-                    <t:extension>
-                        <OverflowToolbar style="Clear">
-                            <Title text="{i18n>items}" />
-                            <ToolbarSpacer/>
-                            <Button text="{i18n>create}" press="."/>
-                            <Button text="{i18n>edit}" press="."/>
-                            <Button text="{i18n>delete}" press="."/>
-                            <Button icon="sap-icon://copy" press=".onOpenPositionPartitioning"/>
-                        </OverflowToolbar>
-                    </t:extension>
-                    <t:columns >
-                        <t:Column width="6rem" hAlign="Center" >
-                            <Text text="{i18n>pos}" />
-                            <t:template >
-                                <Text text="{path: 'mCreateOrder>ItmNumber'}"/>
-                            </t:template>
-                        </t:Column>
-                        <t:Column >
-                            <Text text="{i18n>material}"/>
-                            <t:template >
-                                <Text text="{path: 'mCreateOrder>Material'}"/>
-                            </t:template>
-                        </t:Column>
-                        <t:Column >
-                            <Text text="{i18n>quantity}"/>
-                            <t:template >
-                                <Text text="{path: 'mCreateOrder>TargetQty'}"/>
-                            </t:template>
-                        </t:Column>
-                        <t:Column >
-                            <Text text="{i18n>currency}"/>
-                            <t:template>
-                                <Text text="{path: 'mCreateOrder>Currency'}"/>
-                            </t:template>
-                        </t:Column>
-                        <t:Column >
-                            <Text text="{i18n>netValue}"/>
-                            <t:template>
-                                <Text text="{path: 'mCreateOrder>NetValue'}"/>
-                            </t:template>
-                        </t:Column>	
-                        <t:Column >
-                            <Text text="{i18n>updatedPrice}"/>
-                            <t:template>
-                                <Text text="{path: 'mCreateOrder>TargetVal'}"/>
-                            </t:template>
-                        </t:Column>	
-                        <t:Column width="4rem" hAlign="Center" >
-                            <t:template>
-                                <Button icon="sap-icon://journey-arrive" press="." />
-                            </t:template>
-                        </t:Column>	
-                    </t:columns>
-                </t:Table>
-                <!-- </f:content>
-            </f:SimpleForm> -->
-        </content>
-        <footer>
-			<Bar>
-				<contentRight>
-                    <Button type="Accept" text="{i18n>createOrder}" press="."  />
-				</contentRight>
-			</Bar>
-		</footer>
-    </Page>
+    xmlns:l="sap.ui.layout">
+    <f:DynamicPage
+        headerExpanded="true"
+        headerPinned="true"
+        fitContent="true"
+        showFooter="true">
+        <f:title>
+            <f:DynamicPageTitle >
+                <f:heading>
+                    <Title text="{i18n>order} 006546454" />
+                </f:heading>
+                <f:actions>
+                    <Button tooltip="{i18n>close}" icon="sap-icon://decline"  />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:header>
+            <f:DynamicPageHeader>
+                <form:SimpleForm
+                    editable="true"
+                    width="100%"
+                    layout="ColumnLayout"
+                    labelSpanXL="2"
+                    labelSpanL="2"
+                    labelSpanM="3"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="7"
+                    emptySpanL="2"
+                    emptySpanM="2"
+                    emptySpanS="0"
+                    columnsXL="6"
+                    columnsL="4"
+                    columnsM="2"
+                    singleContainerFullSize="false" >
+                    <form:content>
+                        <core:Title text="{i18n>detailOrder}"/>
+                        <Label text="{i18n>order}"/>
+                        <Text text="006546454" />
+                        <Label text="{i18n>stimate}" />
+                        <Text text="10045276" />
+                        <Label text="{i18n>dateOrder}" />
+                        <Text 
+                            text="{
+                                path:'/mCreateOrder>/oDetailSalesDocument/dateOrder',
+                                type: 'sap.ui.model.type.Date',
+                                formatOptions:{
+                                    style: 'long'
+                                }
+                            }" 
+                        />
+                        <Label text="{i18n>request}" />
+                        <Text text="54400054" />
+                        <Label text="{i18n>recipient}" />
+                        <Text text="14000001"/>
+                        <Label text="{i18n>orderNoCustomer}" />
+                        <Text text="ES70_NOV21_US_Q1" />
+                        <core:Title text="{i18n>confiDetail}" />
+                        <Label text="{i18n>classOrder}" />
+                        <Text text="ZTB1" />
+                        <Label text="{i18n>salesOrganization}" />
+                        <Text text="1000"/>
+                        <Label text="{i18n>salesArea}" />
+                        <Text text="20"/>
+                        <Label text="{i18n>sector}" />
+                        <Text text="10"/>
+                        <Label text="{i18n>factor}" />
+                        <Text text=".1973"/>
+                    </form:content>
+                </form:SimpleForm>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <t:Table 
+                id="tblItemsSaleDoucment"
+                alternateRowColors="true"
+                busyIndicatorDelay="0"
+                enableColumnFreeze="true"
+                enableSelectAll="true"
+                enableColumnReordering="true"
+                showNoData="true"
+                rowSelectionChange="onSelectRowItemSaleDocument"
+                rows="{mCreateOrder>/oDetailSalesDocument/items}"
+                selectionMode="MultiToggle">
+                <t:rowMode>
+                    <rowmodes:Auto  />
+                </t:rowMode>
+                <t:extension>
+                    <OverflowToolbar style="Clear">
+                        <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" />
+                        <ToolbarSpacer/>
+                        <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/>
+                        <Button text="{i18n>edit}" press="." type="Emphasized" icon="sap-icon://edit"
+                            enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
+                        />
+                        <Button text="{i18n>delete}" press=".onRemovePosition" type="Emphasized" icon="sap-icon://decline"
+                            enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
+                        />
+                        <ToolbarSeparator />
+                        <Button press=".onOpenPositionPartitioning" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}" 
+                            type="Default" icon="sap-icon://copy" tooltip="{i18n>copy}"
+                        />
+                    </OverflowToolbar>
+                </t:extension>
+                <t:columns >
+                    <t:Column width="6rem" hAlign="Center" >
+                        <Text text="{i18n>pos}" />
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>ItmNumber'}"/>
+                        </t:template>
+                    </t:Column>
+                    <t:Column >
+                        <Text text="{i18n>material}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>Material'}"/>
+                        </t:template>
+                    </t:Column>
+                    <t:Column >
+                        <Text text="{i18n>quantity}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>TargetQty'}"/>
+                        </t:template>
+                    </t:Column>
+                    <t:Column >
+                        <Text text="{i18n>currency}"/>
+                        <t:template>
+                            <Text text="{path: 'mCreateOrder>Currency'}"/>
+                        </t:template>
+                    </t:Column>
+                    <t:Column >
+                        <Text text="{i18n>netValue}"/>
+                        <t:template>
+                            <Text text="{path: 'mCreateOrder>NetValue'}"/>
+                        </t:template>
+                    </t:Column>	
+                    <t:Column >
+                        <Text text="{i18n>updatedPrice}"/>
+                        <t:template>
+                            <Text text="{path: 'mCreateOrder>TargetVal'}"/>
+                        </t:template>
+                    </t:Column>	
+                    <t:Column width="4rem" hAlign="Center" >
+                        <t:template>
+                            <Button icon="sap-icon://journey-arrive" press="." />
+                        </t:template>
+                    </t:Column>	
+                </t:columns>
+                <t:noData>
+                    <IllustratedMessage
+                        illustrationType="sapIllus-SimpleEmptyList"
+                        enableVerticalResponsiveness="true"
+                        title="{i18n>thereAreNotEntriesYet}"
+                        description="{i18n>thereAreNotEntriesYetDesc}"/>
+                </t:noData>
+            </t:Table>
+        </f:content>
+        <f:footer>
+            <OverflowToolbar >
+                <ToolbarSpacer />
+                <Button type="Reject" text="{i18n>cancel}" press="." icon="sap-icon://undo"  />
+                <Button type="Accept" text="{i18n>createOrder}" press="." icon="sap-icon://create-form"  />
+            </OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>
