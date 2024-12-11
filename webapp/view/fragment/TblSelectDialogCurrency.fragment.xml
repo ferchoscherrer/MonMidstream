@@ -7,19 +7,25 @@
 		search=".onSearchCurrency"
 		confirm=".onSelectCurrency"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/currency'}"
+		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/CurrencySet'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>currency}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>CurrencyName}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>CurrencyCode}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>
 			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
 				<header>
 					<Text text="{i18n>currency}" />
+				</header>
+			</Column>
+			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
+				<header>
+					<Text text="{i18n>code}" />
 				</header>
 			</Column>
 		</columns>

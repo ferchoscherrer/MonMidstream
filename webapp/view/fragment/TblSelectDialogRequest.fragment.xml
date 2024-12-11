@@ -7,14 +7,15 @@
 		search=".onSearchRequest"
 		confirm=".onSelectRequest"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/request'}"
+		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/CustomerSet'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>document}"/>
-                <Text text="{mCreateOrder>name}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>CustomerCode}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Name1}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>CompanyCode}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>
@@ -26,6 +27,11 @@
 			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
 				<header>
 					<Text text="{i18n>customer}" />
+				</header>
+			</Column>
+			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
+				<header>
+					<Text text="{i18n>code}" />
 				</header>
 			</Column>
 		</columns>

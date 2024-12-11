@@ -7,14 +7,14 @@
 		search=".onSearchChannel"
 		confirm=".onSelectChannel"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/channel'}"
+		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/DistributionChannelSet'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>document}"/>
-                <Text text="{mCreateOrder>name}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>DistChan}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Description}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>

@@ -1,7 +1,7 @@
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Dialog from "sap/m/Dialog";
 import { SelectDialog$SearchEvent } from "sap/m/SelectDialog";
-import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
+import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$ConfirmEventParameters, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
 import Router from "sap/ui/core/routing/Router";
@@ -12,6 +12,10 @@ import formatter from "../model/formatter";
 import Input from "sap/m/Input";
 import { Input$ChangeEvent } from "sap/ui/webc/main/Input";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import ODataListBinding from "sap/ui/model/odata/v2/ODataListBinding";
+import Context from "sap/ui/model/odata/v2/Context";
 
 /**
  * @namespace com.triiari.retrobilling.controller
@@ -97,11 +101,28 @@ export default class CreateOrder extends Controller {
     }
 
     public onSearchRequest(oEvent: TableSelectDialog$SearchEvent): void {
-        let sValue: string = oEvent.getParameter("value") || "";
+        let sValue = oEvent.getParameter("value") || "";
+        let oFilter = new Filter({
+            filters: [
+                new Filter("CustomerCode", FilterOperator.Contains, sValue),
+                new Filter("Name1", FilterOperator.Contains, sValue),
+                new Filter("CompanyCode", FilterOperator.Contains, sValue)
+            ],
+            and: false
+        });
+        let oBinding = oEvent.getSource().getBinding("items") as ODataListBinding;
+        oBinding.filter([oFilter]);
     }
 
     public onSelectRequest( oEvent: TableSelectDialog$ConfirmEvent ): void {
-        const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+        const oSelectedContext = oEvent.getParameter("selectedContexts") || [];
+
+        if (oSelectedContext.length > 0) {
+            oSelectedContext.forEach( oSelect  => {
+                // @ts-ignore
+                this.oCreateOrderModel.setProperty(`/oQuery/selectRequest`, oSelect.getObject());                
+            });
+        }
     }
 
     public async onOpenPopUpSalesOrganization(): Promise<void> {
@@ -117,10 +138,25 @@ export default class CreateOrder extends Controller {
 
     public onSearchSalesOrganization(oEvent: TableSelectDialog$SearchEvent): void {
         let sValue: string = oEvent.getParameter("value") || "";
+        let oFilter = new Filter({
+            filters: [
+                new Filter("DistChan", FilterOperator.Contains, sValue),
+                new Filter("Description", FilterOperator.Contains, sValue)
+            ],
+            and: false
+        });
+        let oBinding = oEvent.getSource().getBinding("items") as ODataListBinding;
+        oBinding.filter([oFilter]);
     }
 
     public onSelectSalesOrganization( oEvent: TableSelectDialog$ConfirmEvent ): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+        if (oSelectedContext.length > 0) {
+            oSelectedContext.forEach( oSelect  => {
+                // @ts-ignore
+                this.oCreateOrderModel.setProperty(`/oQuery/selectSalesOrganization`, oSelect.getObject());                
+            });
+        }
     }
 
     public async onOpenPopUpChannel(): Promise<void> {
@@ -136,10 +172,25 @@ export default class CreateOrder extends Controller {
 
     public onSearchChannel(oEvent: TableSelectDialog$SearchEvent): void {
         let sValue: string = oEvent.getParameter("value") || "";
+        let oFilter = new Filter({
+            filters: [
+                new Filter("DistChan", FilterOperator.Contains, sValue),
+                new Filter("Description", FilterOperator.Contains, sValue)
+            ],
+            and: false
+        });
+        let oBinding = oEvent.getSource().getBinding("items") as ODataListBinding;
+        oBinding.filter([oFilter]);
     }
 
     public onSelectChannel( oEvent: TableSelectDialog$ConfirmEvent ): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+        if (oSelectedContext.length > 0) {
+            oSelectedContext.forEach( oSelect  => {
+                // @ts-ignore
+                this.oCreateOrderModel.setProperty(`/oQuery/selectChannel`, oSelect.getObject());                
+            });
+        }
     }
 
     public async onOpenPopUpCurrency(): Promise<void> {
@@ -155,10 +206,25 @@ export default class CreateOrder extends Controller {
 
     public onSearchCurrency(oEvent: TableSelectDialog$SearchEvent): void {
         let sValue: string = oEvent.getParameter("value") || "";
+        let oFilter = new Filter({
+            filters: [
+                new Filter("CurrencyName", FilterOperator.Contains, sValue),
+                new Filter("CurrencyCode", FilterOperator.Contains, sValue)
+            ],
+            and: false
+        });
+        let oBinding = oEvent.getSource().getBinding("items") as ODataListBinding;
+        oBinding.filter([oFilter]);
     }
 
     public onSelectCurrency( oEvent: TableSelectDialog$ConfirmEvent ): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
+        if (oSelectedContext.length > 0) {
+            oSelectedContext.forEach( oSelect  => {
+                // @ts-ignore
+                this.oCreateOrderModel.setProperty(`/oQuery/selectCurrency`, oSelect.getObject());                
+            });
+        }
     }
 
     public onChangeFormatterNumber (oEvent: InputBase$ChangeEvent) : void{

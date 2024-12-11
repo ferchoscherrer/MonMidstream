@@ -15,6 +15,10 @@ server:
             - /resources
             - /test-resources
           url: https://ui5.sap.com
+        backend:
+          - path: /srvMonRetro
+            pathPrefix: /
+            destination: srvMonRetro
     # - name: fiori-tools-appreload
     #   afterMiddleware: compression
     #   configuration:

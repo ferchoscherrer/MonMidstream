@@ -23,6 +23,15 @@
       "createOrder":{
         "uri": "model/createOrder.model.json",
         "type": "JSON"
+      },
+      "ZGW_MAINSTREAM_CATALOGS_SRV": {
+        "uri": "srvMonRetro/ZGW_MAINSTREAM_CATALOGS_SRV/",
+        "type": "OData",
+        "settings": {
+            "annotations": [],
+            "localUri": "localService/metadata.xml",
+            "odataVersion": "2.0"
+        }
       }
     }
   },
@@ -67,6 +76,13 @@
       "mCreateOrder":{
         "dataSource": "createOrder",
         "type": "sap.ui.model.json.JSONModel"
+      },
+      "ZGW_MAINSTREAM_CATALOGS_SRV": {
+        "dataSource": "ZGW_MAINSTREAM_CATALOGS_SRV",
+        "preload": true,
+        "settings": {
+            "useBatch": true
+        }
       }
     },
     "resources": {

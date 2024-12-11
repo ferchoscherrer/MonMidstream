@@ -28,11 +28,11 @@
                     <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
                     <Input id="iptEstimationNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" />
                     <Label text="{i18n>request}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/request}" valueHelpRequest="onOpenPopUpRequest"/>
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectRequest/CompanyCode}} {=${mCreateOrder>/oQuery/selectRequest/Name1}}" valueHelpRequest="onOpenPopUpRequest"/>
                     <Label text="{i18n>salesOrganization}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/salesOrganization}" valueHelpRequest="onOpenPopUpSalesOrganization" />
-                    <Label text="{i18n>channel}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/>
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectSalesOrganization/document}} {=${mCreateOrder>/oQuery/selectSalesOrganization/name}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
+                    <!-- <Label text="{i18n>channel}" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
                     <Label text="{i18n>factor}" />
                     <Input value="{
                             path: 'mCreateOrder>/oQuery/iFactor',
@@ -47,7 +47,7 @@
                     
                      />
                     <Label text="{i18n>currency}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/currency}" valueHelpRequest="onOpenPopUpCurrency" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectCurrency/CurrencyCode}} {=${mCreateOrder>/oQuery/selectCurrency/CurrencyName}} " valueHelpRequest="onOpenPopUpCurrency" />
                     <core:Title/>
                 </f:content>
             </f:SimpleForm>

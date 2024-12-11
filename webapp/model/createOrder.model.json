@@ -5,7 +5,11 @@
         "salesOrganization": "",
         "channel": "",
         "iFactor": null,
-        "currency": ""
+        "currency": "",
+        "selectSalesOrganization": null,
+        "selectRequest": null,
+        "selectChannel": null,
+        "selectCurrency": null
     },
     "oConfig" : {
         "oAcctionTblItemSalesDocument":{
