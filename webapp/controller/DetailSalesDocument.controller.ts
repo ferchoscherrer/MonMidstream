@@ -21,7 +21,7 @@ export default class DetailSalesDocument extends Controller {
     private oI18nModel: ResourceModel;
     private oI18n: ResourceBundle;
     private oCreateOrderModel: JSONModel;
-    
+
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
@@ -84,62 +84,69 @@ export default class DetailSalesDocument extends Controller {
     }
 
     public onSelectRowItemSaleDocument() {
-        const oTblSalesDocument = this.byId("tblItemsSaleDoucment") as Table;
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
         const arrSelectRows = oTblSalesDocument.getSelectedIndices();
 
-        this.oCreateOrderModel.setProperty('/oConfig/oAcctionTblItemSalesDocument/enabled',arrSelectRows.length > 0);
+        this.oCreateOrderModel.setProperty('/oConfig/oAcctionTblItemSalesDocument/enabled', arrSelectRows.length > 0);
     }
 
-    public onRemovePosition(){
-        const oTblSalesDocument = this.byId("tblItemsSaleDoucment") as Table;
-        const arrTblSalesDocumentModel = this.oCreateOrderModel.getProperty('/oDetailSalesDocument/items');
-        const arrContexIndexByTable = this.getContexIdexByTable(oTblSalesDocument);
-        
+    public removeSelectedPositions() {
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oDetailSalesDocument/items');
+        const arrSelectedIndices = oTblSalesDocument.getSelectedIndices();
+        const arrPurgedItems = [];
+
+        for(let i = 0; i < arrItemsTable.length; i++) {
+            if(arrSelectedIndices.includes(i)){
+                oTblSalesDocument.removeSelectionInterval(i, i);
+                continue;
+            }
+            arrPurgedItems.push(arrItemsTable[i]);
+        }
+
+        this.oCreateOrderModel.setProperty('/oDetailSalesDocument/items', arrPurgedItems);
+    }
+
+    public onConfirmRemovePosition(): void {
         MessageBox.warning(this.oI18n.getText('confirmRemovePosition') || '', {
-            actions: [this.oI18n.getText('not') || '',this.oI18n.getText('yes') || ''],
+            actions: [this.oI18n.getText('not') || '', this.oI18n.getText('yes') || ''],
             emphasizedAction: this.oI18n.getText('yes'),
-            onClose:  (sAction : string)  => {
-                if (sAction === this.oI18n.getText('yes')){
-                    oTblSalesDocument.setSelectedIndex(-1);
-                    this.removeDataTable(arrTblSalesDocumentModel ,arrContexIndexByTable);
-                }
+            onClose: (sAction: string) => {
+                if (sAction !== this.oI18n.getText('yes')) return;
+
+                this.removeSelectedPositions();
             },
             dependentOn: this.getView()
         });
-
     }
 
-    public getContexIdexByTable(oTable: Table) : Context[] {
-        const arrSelectRows = oTable.getSelectedIndices();
-        
-        let arrContextByIndex : Context[] = [] ;
+    // public getContextsBySelectedIndicesTable(oTable: Table): Context[] {
+    //     const arrSelectRows = oTable.getSelectedIndices();
+    //     let arrContextByIndex: Context[] = [];
 
-        for (const oSelcRows of arrSelectRows) {
-            const oContextByIndex = oTable.getContextByIndex(oSelcRows);
-            
-            if (!oContextByIndex) continue;
-                
-            arrContextByIndex.push(oContextByIndex);
-        }
+    //     for (const iIndex of arrSelectRows) {
+    //         const oContext = oTable.getContextByIndex(iIndex);
+    //         if (!oContext) continue;
+    //         arrContextByIndex.push(oContext);
+    //     }
+    //     return arrContextByIndex;
+    // }
 
-        return arrContextByIndex;
-    }
+    // public removeDataTable(arrModelTable: [], arrContexIndexByTable: Context[]) {
+    //     let arrItmNumber: number[] = [];
+    //     for (const oContext of arrContexIndexByTable) {
+    //         const sPath = oContext.getPath();
+    //         const oInfoData = this.oCreateOrderModel.getProperty(sPath);
+    //         arrItmNumber.push(oInfoData.ItmNumber);
 
-    public removeDataTable (arrModelTable: [], arrContexIndexByTable: Context[]) {
-        let arrItmNumber : number[] = [];
-        for (const oContext of arrContexIndexByTable) {
-            const sPath = oContext.getPath();
-            const oInfoData = this.oCreateOrderModel.getProperty(sPath);
-            arrItmNumber.push(oInfoData.ItmNumber);
+    //     }
 
-        }
+    //     debugger
+    //     for (const iItmNumber of arrItmNumber) {
+    //         const indexToDelete = arrModelTable.findIndex(oData => oData.ItmNumber === iItmNumber);
+    //         arrModelTable.splice(indexToDelete, 1);
+    //     }
 
-        debugger
-        for (const iItmNumber of arrItmNumber) {
-            const indexToDelete = arrModelTable.findIndex( oData => oData.ItmNumber === iItmNumber);
-            arrModelTable.splice(indexToDelete,1);
-        }
-
-        this.oCreateOrderModel.refresh(true);
-    }
+    //     this.oCreateOrderModel.refresh(true);
+    // }
 }

@@ -79,7 +79,7 @@
         </f:header>
         <f:content>
             <t:Table 
-                id="tblItemsSaleDoucment"
+                id="tblItemsSaleDocument"
                 alternateRowColors="true"
                 busyIndicatorDelay="0"
                 enableColumnFreeze="true"
@@ -100,7 +100,7 @@
                         <Button text="{i18n>edit}" press="." type="Emphasized" icon="sap-icon://edit"
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
                         />
-                        <Button text="{i18n>delete}" press=".onRemovePosition" type="Emphasized" icon="sap-icon://decline"
+                        <Button text="{i18n>delete}" press=".onConfirmRemovePosition" type="Emphasized" icon="sap-icon://decline"
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
                         />
                         <ToolbarSeparator />
