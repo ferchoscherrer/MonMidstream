@@ -26,11 +26,11 @@
                 <f:content>
                     <core:Title/>
                     <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
-                    <Input id="iptEstimationNumber" showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" />
+                    <Input id="iptEstimationNumber" showValueHelp="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" submit=".onEstimationNumber"/>
                     <Label text="{i18n>request}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectRequest/CompanyCode}} {=${mCreateOrder>/oQuery/selectRequest/Name1}}" valueHelpRequest="onOpenPopUpRequest"/>
                     <Label text="{i18n>salesOrganization}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectSalesOrganization/document}} {=${mCreateOrder>/oQuery/selectSalesOrganization/name}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgVta}} {=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgName}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
                     <!-- <Label text="{i18n>channel}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
                     <Label text="{i18n>factor}" />
@@ -55,7 +55,7 @@
         <footer>
 			<Bar>
 				<contentRight>
-                    <Button id="btnDescestimationNumber" type="Accept" text="{i18n>create}" press="onOpenDetailSalesDocument"  />
+                    <Button id="btnDescestimationNumber" type="Accept" text="{i18n>create}" enabled="{mCreateOrder>/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate}" press="onOpenDetailSalesDocument"  />
                     <Button type="Reject" text="{i18n>cancel}"/>
 				</contentRight>
 			</Bar>

@@ -14,7 +14,7 @@
         <f:title>
             <f:DynamicPageTitle >
                 <f:heading>
-                    <Title text="{i18n>order} 006546454" />
+                    <Title text="{=${i18n>order}} {=${mCreateOrder>/oSalesOrder/DocNumber}}" />
                 </f:heading>
                 <f:actions>
                     <Button tooltip="{i18n>close}" icon="sap-icon://decline"  />
@@ -43,13 +43,13 @@
                     <form:content>
                         <core:Title text="{i18n>detailOrder}"/>
                         <Label text="{i18n>order}"/>
-                        <Text text="006546454" />
+                        <Text text="{mCreateOrder>/oSalesOrder/DocNumber}" />
                         <Label text="{i18n>stimate}" />
                         <Text text="10045276" />
                         <Label text="{i18n>dateOrder}" />
                         <Text 
                             text="{
-                                path:'/mCreateOrder>/oDetailSalesDocument/dateOrder',
+                                path:'mCreateOrder>/oSalesOrder/DocDate',
                                 type: 'sap.ui.model.type.Date',
                                 formatOptions:{
                                     style: 'long'
@@ -59,18 +59,18 @@
                         <Label text="{i18n>request}" />
                         <Text text="54400054" />
                         <Label text="{i18n>recipient}" />
-                        <Text text="14000001"/>
+                        <Text text="{mCreateOrder>/oSalesOrder/SoldTo}"/>
                         <Label text="{i18n>orderNoCustomer}" />
-                        <Text text="ES70_NOV21_US_Q1" />
+                        <Text text="{mCreateOrder>/oSalesOrder/PurchNo}" />
                         <core:Title text="{i18n>confiDetail}" />
                         <Label text="{i18n>classOrder}" />
-                        <Text text="ZTB1" />
+                        <Text text="{mCreateOrder>/oSalesOrder/DocType}" />
                         <Label text="{i18n>salesOrganization}" />
-                        <Text text="1000"/>
+                        <Text text="{mCreateOrder>/oSalesOrder/SalesOrg}"/>
                         <Label text="{i18n>salesArea}" />
-                        <Text text="20"/>
+                        <Text text="{mCreateOrder>/oSalesOrder/SalesOff}"/>
                         <Label text="{i18n>sector}" />
-                        <Text text="10"/>
+                        <Text text="{mCreateOrder>/oSalesOrder/Division}"/>
                         <Label text="{i18n>factor}" />
                         <Text text=".1973"/>
                     </form:content>
@@ -87,14 +87,16 @@
                 enableColumnReordering="true"
                 showNoData="true"
                 rowSelectionChange="onSelectRowItemSaleDocument"
-                rows="{mCreateOrder>/oDetailSalesDocument/items}"
+                rows="{mCreateOrder>/oSalesOrder/SalesOrderItems/results}"
                 selectionMode="MultiToggle">
+                <!-- rows="{mCreateOrder>/oDetailSalesDocument/items}" -->
                 <t:rowMode>
                     <rowmodes:Auto  />
                 </t:rowMode>
                 <t:extension>
                     <OverflowToolbar style="Clear">
-                        <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" />
+                        <!-- <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" /> -->
+                        <Title text="{i18n>items} ({= ${mCreateOrder>/oSalesOrder/SalesOrderItems/results}.length })" />
                         <ToolbarSpacer/>
                         <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/>
                         <Button text="{i18n>edit}" press="." type="Emphasized" icon="sap-icon://edit"

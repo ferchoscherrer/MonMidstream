@@ -7,14 +7,14 @@
 		search=".onSearchSalesOrganization"
 		confirm=".onSelectSalesOrganization"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/salesOrganization'}"
+		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/SalesOrgSet'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>document}"/>
-                <Text text="{mCreateOrder>name}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>SalesOrgVta}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>SalesOrgName}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>

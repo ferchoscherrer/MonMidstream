@@ -7,14 +7,19 @@
 		search=".onSearchestimationNumber"
 		confirm=".onSelectestimationNumber"
 		showClearButton="true"
-		items= "{path : 'mCreateOrder>/testData'}"
+		items= "{
+			path : 'ZSD_SALES_DOC_GET_SRV_01>/SalesOrderHeaderSet',
+			parameters: {
+				expand: 'SalesOrderItems'
+			}
+		}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{mCreateOrder>cod}"/>
-                <Text text="{mCreateOrder>nameOrder}"/>
+                <Text text="{ZSD_SALES_DOC_GET_SRV_01>DocNumber}"/>
+                <Text text="{ZSD_SALES_DOC_GET_SRV_01>DocType}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>

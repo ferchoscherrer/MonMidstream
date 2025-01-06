@@ -9,13 +9,19 @@ import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import formatter from "../model/formatter";
-import Input from "sap/m/Input";
+import Input, { Input$SubmitEvent } from "sap/m/Input";
 import { Input$ChangeEvent } from "sap/ui/webc/main/Input";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ODataListBinding from "sap/ui/model/odata/v2/ODataListBinding";
 import Context from "sap/ui/model/odata/v2/Context";
+import MessageBox from "sap/m/MessageBox";
+import BusyIndicator from "sap/ui/core/BusyIndicator";
+import EventProvider from "sap/ui/base/EventProvider";
+import { ERP } from "../modules/ERP";
+import ODataModel from "sap/ui/model/odata/v2/ODataModel";
+
 
 /**
  * @namespace com.triiari.retrobilling.controller
@@ -32,7 +38,10 @@ export default class CreateOrder extends Controller {
     private oFragmentChannel: Dialog;
     private oFragmentCurrency: Dialog;
     private oRouter: Router;
+    private ZSD_SALES_DOC_GET_SRV_01 : ODataModel;
     public formater = formatter;
+    
+
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
@@ -40,6 +49,7 @@ export default class CreateOrder extends Controller {
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
+        this.ZSD_SALES_DOC_GET_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_DOC_GET_SRV_01") as ODataModel; 
     }
 
     public async onOpenPopUpEstimationNumber(): Promise<void> {
@@ -87,6 +97,35 @@ export default class CreateOrder extends Controller {
         //             that.setsVtextSpart(oSelect.getObject().VtextSpart)
         //         });
         //     }
+    }
+
+    public async onEstimationNumber(oEvent: Input$SubmitEvent) : Promise<void> {
+        try {
+            BusyIndicator.show();
+            const sValue = oEvent.getParameter("value") || '';
+
+            if (!sValue) throw new Error(this.oI18n.getText("errorEstimateNumber"));
+
+            const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet',{
+                DocNumber: sValue
+            });
+            const {data: oResponse} = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_DOC_GET_SRV_01,{
+                bParam: true,
+                oParameter: {$expand: 'SalesOrderItems'}
+            });
+
+            this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
+            this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', true);
+
+        } catch (oError: any) {
+            const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
+            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+
+            this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', false);
+        } finally {
+            BusyIndicator.hide();
+        }
+
     }
 
     public async onOpenPopUpRequest(): Promise<void> {

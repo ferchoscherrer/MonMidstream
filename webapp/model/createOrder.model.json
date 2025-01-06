@@ -14,8 +14,13 @@
     "oConfig" : {
         "oAcctionTblItemSalesDocument":{
             "enabled": false
+        },
+        "oAcctionBtnViewSalesCreate":{
+            "enabledSalesCreate": false
         }
+
     },
+    "oSalesOrder": null,
     "oDetailSalesDocument": {
         "dateOrder": "Noviembre 22, 2024",
         "items": [
