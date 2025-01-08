@@ -9,6 +9,7 @@ import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import { Table$SelectionChangeEvent } from "sap/ui/mdc/Table";
 import Context from "sap/ui/model/Context";
+import { Input$SubmitEvent } from "sap/m/Input";
 
 
 /**
@@ -88,11 +89,12 @@ export default class DetailSalesDocument extends Controller {
         const arrSelectRows = oTblSalesDocument.getSelectedIndices();
 
         this.oCreateOrderModel.setProperty('/oConfig/oAcctionTblItemSalesDocument/enabled', arrSelectRows.length > 0);
+        this.oCreateOrderModel.setProperty('/oConfig/oAcctionTblItemSalesDocumentSingle/enabled', arrSelectRows.length === 1);
     }
 
     public removeSelectedPositions() {
         const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
-        const arrItemsTable = this.oCreateOrderModel.getProperty('/oDetailSalesDocument/items');
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
         const arrSelectedIndices = oTblSalesDocument.getSelectedIndices();
         const arrPurgedItems = [];
 
@@ -104,7 +106,7 @@ export default class DetailSalesDocument extends Controller {
             arrPurgedItems.push(arrItemsTable[i]);
         }
 
-        this.oCreateOrderModel.setProperty('/oDetailSalesDocument/items', arrPurgedItems);
+        this.oCreateOrderModel.setProperty('/oSalesOrder/ToItems/results', arrPurgedItems);
     }
 
     public onConfirmRemovePosition(): void {
@@ -120,33 +122,22 @@ export default class DetailSalesDocument extends Controller {
         });
     }
 
-    // public getContextsBySelectedIndicesTable(oTable: Table): Context[] {
-    //     const arrSelectRows = oTable.getSelectedIndices();
-    //     let arrContextByIndex: Context[] = [];
+    public editSelectedPositions(): void {
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        const arrSelectedIndices = oTblSalesDocument.getSelectedIndices();
+        arrItemsTable[arrSelectedIndices[0]].editQuantity = true;
 
-    //     for (const iIndex of arrSelectRows) {
-    //         const oContext = oTable.getContextByIndex(iIndex);
-    //         if (!oContext) continue;
-    //         arrContextByIndex.push(oContext);
-    //     }
-    //     return arrContextByIndex;
-    // }
+        this.oCreateOrderModel.setProperty('/iColumnEditSalesDocument',arrSelectedIndices[0]);
+        this.oCreateOrderModel.refresh(true);
+    }
 
-    // public removeDataTable(arrModelTable: [], arrContexIndexByTable: Context[]) {
-    //     let arrItmNumber: number[] = [];
-    //     for (const oContext of arrContexIndexByTable) {
-    //         const sPath = oContext.getPath();
-    //         const oInfoData = this.oCreateOrderModel.getProperty(sPath);
-    //         arrItmNumber.push(oInfoData.ItmNumber);
-
-    //     }
-
-    //     debugger
-    //     for (const iItmNumber of arrItmNumber) {
-    //         const indexToDelete = arrModelTable.findIndex(oData => oData.ItmNumber === iItmNumber);
-    //         arrModelTable.splice(indexToDelete, 1);
-    //     }
-
-    //     this.oCreateOrderModel.refresh(true);
-    // }
+    public submitQuantity(oEvent: Input$SubmitEvent): void {
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        const iColumnEditSalesDocument = this.oCreateOrderModel.getProperty('/iColumnEditSalesDocument');
+        arrItemsTable[iColumnEditSalesDocument].editQuantity = false;
+        oTblSalesDocument.removeSelectionInterval(0,arrItemsTable.length);
+        this.oCreateOrderModel.refresh(true);
+    }
 }

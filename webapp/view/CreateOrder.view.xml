@@ -33,8 +33,10 @@
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgVta}} {=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgName}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
                     <!-- <Label text="{i18n>channel}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{mCreateOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
-                    <Label text="{i18n>factor}" />
-                    <Input value="{
+                    <Label text="{i18n>factor}" labelFor="iptFactor" required="true" />
+                    <Input 
+                        id="iptFactor"
+                        value="{
                             path: 'mCreateOrder>/oQuery/iFactor',
                             type:'sap.ui.model.type.Float',
                             formatOptions: {

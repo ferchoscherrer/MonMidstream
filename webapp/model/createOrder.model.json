@@ -9,10 +9,14 @@
         "selectSalesOrganization": null,
         "selectRequest": null,
         "selectChannel": null,
-        "selectCurrency": null
+        "selectCurrency": null,
+        "bToRequiredQuery": true
     },
     "oConfig" : {
         "oAcctionTblItemSalesDocument":{
+            "enabled": false
+        },
+        "oAcctionTblItemSalesDocumentSingle":{
             "enabled": false
         },
         "oAcctionBtnViewSalesCreate":{

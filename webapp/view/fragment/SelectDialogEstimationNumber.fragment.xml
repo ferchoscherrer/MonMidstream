@@ -8,9 +8,9 @@
 		confirm=".onSelectestimationNumber"
 		showClearButton="true"
 		items= "{
-			path : 'ZSD_SALES_DOC_GET_SRV_01>/SalesOrderHeaderSet',
+			path : 'ZSD_SALES_GET_DOC_SRV>/SalesOrderHeaderSet',
 			parameters: {
-				expand: 'SalesOrderItems'
+				expand: 'ToItems,ToConditions,ToPartners,ToServices'
 			}
 		}"
 		contentHeight= "30%"
@@ -18,8 +18,8 @@
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{ZSD_SALES_DOC_GET_SRV_01>DocNumber}"/>
-                <Text text="{ZSD_SALES_DOC_GET_SRV_01>DocType}"/>
+                <Text text="{ZSD_SALES_GET_DOC_SRV>DocNumber}"/>
+                <Text text="{ZSD_SALES_GET_DOC_SRV>DocType}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>

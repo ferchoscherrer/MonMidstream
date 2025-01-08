@@ -5,7 +5,9 @@
     "type": "application",
     "i18n": {
       "bundleUrl": "i18n/i18n.properties",
-      "supportedLocales": ["es"],
+      "supportedLocales": [
+        "es"
+      ],
       "fallbackLocale": "es"
     },
     "applicationVersion": {
@@ -20,7 +22,7 @@
       "toolsId": "acdf45e0-eb98-4a0d-a707-782f020b4345"
     },
     "dataSources": {
-      "createOrder":{
+      "createOrder": {
         "uri": "model/createOrder.model.json",
         "type": "JSON"
       },
@@ -28,18 +30,40 @@
         "uri": "srvMonRetro/ZGW_MAINSTREAM_CATALOGS_SRV/",
         "type": "OData",
         "settings": {
-            "annotations": [],
-            "localUri": "localService/metadata.xml",
-            "odataVersion": "2.0"
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "2.0"
         }
       },
       "ZSD_SALES_DOC_GET_SRV_01": {
         "uri": "srvMonRetro/ZSD_SALES_DOC_GET_SRV_01/",
         "type": "OData",
         "settings": {
-            "annotations": [],
-            "localUri": "localService/metadata.xml",
-            "odataVersion": "2.0"
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "ZSD_SALES_GET_DOC_SRV": {
+        "uri": "srvMonRetro/ZSD_SALES_GET_DOC_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "retrobill-Display": {
+          "semanticObject": "retrobill",
+          "action": "Display",
+          "title": "{{flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
         }
       }
     }
@@ -78,11 +102,13 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "com.triiari.retrobilling.i18n.i18n",
-          "supportedLocales": ["es"],
+          "supportedLocales": [
+            "es"
+          ],
           "fallbackLocale": "es"
         }
       },
-      "mCreateOrder":{
+      "mCreateOrder": {
         "dataSource": "createOrder",
         "type": "sap.ui.model.json.JSONModel"
       },
@@ -90,14 +116,21 @@
         "dataSource": "ZGW_MAINSTREAM_CATALOGS_SRV",
         "preload": true,
         "settings": {
-            "useBatch": true
+          "useBatch": true
         }
       },
       "ZSD_SALES_DOC_GET_SRV_01": {
         "dataSource": "ZSD_SALES_DOC_GET_SRV_01",
         "preload": true,
         "settings": {
-            "useBatch": true
+          "useBatch": true
+        }
+      },
+      "ZSD_SALES_GET_DOC_SRV": {
+        "dataSource": "ZSD_SALES_GET_DOC_SRV",
+        "preload": true,
+        "settings": {
+          "useBatch": true
         }
       }
     },

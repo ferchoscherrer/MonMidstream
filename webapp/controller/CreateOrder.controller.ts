@@ -28,7 +28,7 @@ import ODataModel from "sap/ui/model/odata/v2/ODataModel";
  */
 
 export default class CreateOrder extends Controller {
-    
+
     private oCreateOrderModel: JSONModel;
     private oI18nModel: ResourceModel;
     private oI18n: ResourceBundle;
@@ -38,9 +38,10 @@ export default class CreateOrder extends Controller {
     private oFragmentChannel: Dialog;
     private oFragmentCurrency: Dialog;
     private oRouter: Router;
-    private ZSD_SALES_DOC_GET_SRV_01 : ODataModel;
+    private ZSD_SALES_DOC_GET_SRV_01: ODataModel;
+    private ZSD_SALES_GET_DOC_SRV: ODataModel;
     public formater = formatter;
-    
+
 
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
@@ -49,7 +50,8 @@ export default class CreateOrder extends Controller {
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
-        this.ZSD_SALES_DOC_GET_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_DOC_GET_SRV_01") as ODataModel; 
+        this.ZSD_SALES_DOC_GET_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_DOC_GET_SRV_01") as ODataModel;
+        this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
     }
 
     public async onOpenPopUpEstimationNumber(): Promise<void> {
@@ -58,7 +60,7 @@ export default class CreateOrder extends Controller {
             name: "com.triiari.retrobilling.view.fragment.SelectDialogEstimationNumber",
             controller: this,
         }) as Dialog;
-        
+
         this.getView()?.addDependent(this.oFragmentEstimationNumber);
         this.oFragmentEstimationNumber.open();
     }
@@ -76,17 +78,17 @@ export default class CreateOrder extends Controller {
         // oBinding.filter(arrFilters);
     }
 
-    public onSelectEstimationNumber( oEvent: TableSelectDialog$ConfirmEvent ): void {
+    public onSelectEstimationNumber(oEvent: TableSelectDialog$ConfirmEvent): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
-        let oSlctEstimationNumber =  this.oCreateOrderModel.getProperty('/oSelectEstimationNumber');
+        let oSlctEstimationNumber = this.oCreateOrderModel.getProperty('/oSelectEstimationNumber');
         // TODO: Crear funcionalidad de seleccion de datos por medio de un oData
         for (const oSelectEstimationNumber of oSelectedContext) {
             this.oCreateOrderModel.setProperty('/oSelectEstimationNumber', oSelectEstimationNumber);
         }
         // Si el Odata no arroja ningun valor al seleccionar el numero de estimacion, se muestra mensaje de error  
-        if (oSlctEstimationNumber.length === 0 ) throw new Error(this.oI18n.getText("errorEstimationNumber"));
-        
-        
+        if (oSlctEstimationNumber.length === 0) throw new Error(this.oI18n.getText("errorEstimationNumber"));
+
+
         // let oSelectedContex = oEvent.getParameter("selectedContexts"),
         //         that = this;
         //     if (oSelectedContex) {
@@ -99,22 +101,24 @@ export default class CreateOrder extends Controller {
         //     }
     }
 
-    public async onEstimationNumber(oEvent: Input$SubmitEvent) : Promise<void> {
+    public async onEstimationNumber(oEvent: Input$SubmitEvent): Promise<void> {
         try {
             BusyIndicator.show();
             const sValue = oEvent.getParameter("value") || '';
 
             if (!sValue) throw new Error(this.oI18n.getText("errorEstimateNumber"));
 
-            const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet',{
+            const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
                 DocNumber: sValue
             });
-            const {data: oResponse} = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_DOC_GET_SRV_01,{
-                bParam: true,
-                oParameter: {$expand: 'SalesOrderItems'}
-            });
+            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV
+                // , {
+                // bParam: true,
+                // oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
+                // }
+            );
 
-            this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
+            // this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', true);
 
         } catch (oError: any) {
@@ -134,7 +138,7 @@ export default class CreateOrder extends Controller {
             name: "com.triiari.retrobilling.view.fragment.TblSelectDialogRequest",
             controller: this,
         }) as Dialog;
-        
+
         this.getView()?.addDependent(this.oFragmentRequest);
         this.oFragmentRequest.open();
     }
@@ -153,13 +157,13 @@ export default class CreateOrder extends Controller {
         oBinding.filter([oFilter]);
     }
 
-    public onSelectRequest( oEvent: TableSelectDialog$ConfirmEvent ): void {
+    public onSelectRequest(oEvent: TableSelectDialog$ConfirmEvent): void {
         const oSelectedContext = oEvent.getParameter("selectedContexts") || [];
 
         if (oSelectedContext.length > 0) {
-            oSelectedContext.forEach( oSelect  => {
+            oSelectedContext.forEach(oSelect => {
                 // @ts-ignore
-                this.oCreateOrderModel.setProperty(`/oQuery/selectRequest`, oSelect.getObject());                
+                this.oCreateOrderModel.setProperty(`/oQuery/selectRequest`, oSelect.getObject());
             });
         }
     }
@@ -170,7 +174,7 @@ export default class CreateOrder extends Controller {
             name: "com.triiari.retrobilling.view.fragment.TblSalesOrganization",
             controller: this,
         }) as Dialog;
-        
+
         this.getView()?.addDependent(this.oFragmentSalesOrganization);
         this.oFragmentSalesOrganization.open();
     }
@@ -188,12 +192,12 @@ export default class CreateOrder extends Controller {
         oBinding.filter([oFilter]);
     }
 
-    public onSelectSalesOrganization( oEvent: TableSelectDialog$ConfirmEvent ): void {
+    public onSelectSalesOrganization(oEvent: TableSelectDialog$ConfirmEvent): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
         if (oSelectedContext.length > 0) {
-            oSelectedContext.forEach( oSelect  => {
+            oSelectedContext.forEach(oSelect => {
                 // @ts-ignore
-                this.oCreateOrderModel.setProperty(`/oQuery/selectSalesOrganization`, oSelect.getObject());                
+                this.oCreateOrderModel.setProperty(`/oQuery/selectSalesOrganization`, oSelect.getObject());
             });
         }
     }
@@ -204,7 +208,7 @@ export default class CreateOrder extends Controller {
             name: "com.triiari.retrobilling.view.fragment.TblSelectDialogChannel",
             controller: this,
         }) as Dialog;
-        
+
         this.getView()?.addDependent(this.oFragmentChannel);
         this.oFragmentChannel.open();
     }
@@ -222,12 +226,12 @@ export default class CreateOrder extends Controller {
         oBinding.filter([oFilter]);
     }
 
-    public onSelectChannel( oEvent: TableSelectDialog$ConfirmEvent ): void {
+    public onSelectChannel(oEvent: TableSelectDialog$ConfirmEvent): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
         if (oSelectedContext.length > 0) {
-            oSelectedContext.forEach( oSelect  => {
+            oSelectedContext.forEach(oSelect => {
                 // @ts-ignore
-                this.oCreateOrderModel.setProperty(`/oQuery/selectChannel`, oSelect.getObject());                
+                this.oCreateOrderModel.setProperty(`/oQuery/selectChannel`, oSelect.getObject());
             });
         }
     }
@@ -238,7 +242,7 @@ export default class CreateOrder extends Controller {
             name: "com.triiari.retrobilling.view.fragment.TblSelectDialogCurrency",
             controller: this,
         }) as Dialog;
-        
+
         this.getView()?.addDependent(this.oFragmentCurrency);
         this.oFragmentCurrency.open();
     }
@@ -256,28 +260,78 @@ export default class CreateOrder extends Controller {
         oBinding.filter([oFilter]);
     }
 
-    public onSelectCurrency( oEvent: TableSelectDialog$ConfirmEvent ): void {
+    public onSelectCurrency(oEvent: TableSelectDialog$ConfirmEvent): void {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
         if (oSelectedContext.length > 0) {
-            oSelectedContext.forEach( oSelect  => {
+            oSelectedContext.forEach(oSelect => {
                 // @ts-ignore
-                this.oCreateOrderModel.setProperty(`/oQuery/selectCurrency`, oSelect.getObject());                
+                this.oCreateOrderModel.setProperty(`/oQuery/selectCurrency`, oSelect.getObject());
             });
         }
     }
 
-    public onChangeFormatterNumber (oEvent: InputBase$ChangeEvent) : void{
+    public onChangeFormatterNumber(oEvent: InputBase$ChangeEvent): void {
         const oSource = oEvent.getSource();
         const oBinding = oSource.getBinding('value');
         const sPath = oBinding?.getPath() || '';
         const sValue = oEvent.getParameter("value") || "";
-        const sReplaceVale = sValue.replace(/[^0-9,.]/g,'');
-        this.oCreateOrderModel.setProperty(sPath,sReplaceVale);
+        const sReplaceVale = sValue.replace(/[^0-9,.]/g, '');
+        this.oCreateOrderModel.setProperty(sPath, sReplaceVale);
     }
 
     public onOpenDetailSalesDocument(): void {
-        this.oRouter.navTo("RouteDetailSalesOrder", {
-            estimationNumber: "112312"
-        })
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+
+        this.onQuerySalesOrder();
+
+        if (!oQueryData.bToRequiredQuery)
+            this.oRouter.navTo("RouteDetailSalesOrder", {
+                estimationNumber: oQueryData.estimationNumber
+            });
     }
+
+    public async onQuerySalesOrder(): Promise<void> {
+        try {
+            BusyIndicator.show();
+            this.onValidateData();
+
+            const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+
+            const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
+                DocNumber: oQueryData.estimationNumber
+            });
+            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, {
+                bParam: true,
+                oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
+            });
+
+            const arrSalesOrderItems =  oResponse.ToItems["results"];
+
+            for (const oItem of arrSalesOrderItems) {
+                oItem.editQuantity = false;
+                oItem.TargetValCalculate = oItem.NetValue * parseFloat(oQueryData.iFactor)
+            }
+            
+            this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
+
+        } catch (oError: any) {
+            const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
+            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
+    }
+
+    public onValidateData() : void {
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+
+        this.oCreateOrderModel.setProperty(
+            '/oQuery/bToRequiredQuery', 
+            !oQueryData.estimationNumber || !oQueryData.iFactor
+        );
+
+        if (!oQueryData.estimationNumber)  throw new Error(this.oI18n.getText("errorEstimateNumberEmpty"));
+        if (!oQueryData.iFactor)  throw new Error(this.oI18n.getText("errorFactorEmpty"));
+    }
+
 }
