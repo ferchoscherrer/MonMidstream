@@ -4,33 +4,48 @@
     <TableSelectDialog
 		noDataText="{i18n>noData}"
 		title="{i18n>estimationNumber}"
-		search=".onSearchestimationNumber"
-		confirm=".onSelectestimationNumber"
+		search=".onSearchEstimationNumber"
+		confirm=".onSelectEstimationNumber"
 		showClearButton="true"
 		items= "{
-			path : 'ZSD_SALES_GET_DOC_SRV>/SalesOrderHeaderSet',
-			parameters: {
-				expand: 'ToItems,ToConditions,ToPartners,ToServices'
-			}
+			path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/SalesOrderSet'
 		}"
 		contentHeight= "30%"
-		contentWidth="30%"
+		contentWidth="50%"
 		resizable="true">
 		<ColumnListItem>
 			<cells>
-                <Text text="{ZSD_SALES_GET_DOC_SRV>DocNumber}"/>
-                <Text text="{ZSD_SALES_GET_DOC_SRV>DocType}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Vbeln}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Auart}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Vkorg}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Kunnr}"/>
+                <Text text="{ZGW_MAINSTREAM_CATALOGS_SRV>Waerk}"/>
 			</cells>
 		</ColumnListItem>
 		<columns>
 			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
 				<header>
-					<Text text="{i18n>code}" />
+					<Text text="{i18n>estimationNumber}" />
 				</header>
 			</Column>
 			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
 				<header>
 					<Text text="{i18n>description}" />
+				</header>
+			</Column>
+			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
+				<header>
+					<Text text="{i18n>salesOrganization}" />
+				</header>
+			</Column>
+			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
+				<header>
+					<Text text="{i18n>request}" />
+				</header>
+			</Column>
+			<Column minScreenWidth="Tablet" demandPopin="true" width="12em">
+				<header>
+					<Text text="{i18n>currency}" />
 				</header>
 			</Column>
 		</columns>

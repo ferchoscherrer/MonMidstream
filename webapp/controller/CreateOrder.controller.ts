@@ -55,6 +55,17 @@ export default class CreateOrder extends Controller {
     }
 
     public async onOpenPopUpEstimationNumber(): Promise<void> {
+
+        const oQuery = this.oCreateOrderModel.getProperty('/oQuery');
+        const oFilter = new Filter({
+            filters: [
+                new Filter("Waerk", FilterOperator.EQ, oQuery.selectCurrency?.CurrencyCode || ''),
+                new Filter("Kunnr", FilterOperator.EQ, oQuery.selectRequest?.CustomerCode || ''),
+                new Filter("Vkorg", FilterOperator.EQ, oQuery.selectSalesOrganization?.SalesOrgVta || ""),
+                new Filter('Auart', FilterOperator.EQ, 'ZCBF')
+            ]
+        });
+
         this.oFragmentEstimationNumber ??= await Fragment.load({
             id: this.getView()?.getId(),
             name: "com.triiari.retrobilling.view.fragment.SelectDialogEstimationNumber",
@@ -62,61 +73,49 @@ export default class CreateOrder extends Controller {
         }) as Dialog;
 
         this.getView()?.addDependent(this.oFragmentEstimationNumber);
+        const oBinding = this.oFragmentEstimationNumber.getBinding("items") as ODataListBinding;
+        oBinding.filter(oFilter);
         this.oFragmentEstimationNumber.open();
     }
 
     public onSearchEstimationNumber(oEvent: TableSelectDialog$SearchEvent): void {
         let sValue: string = oEvent.getParameter("value") || "";
-        // let arrFilters = [
-        //     new Filter("Bukrs", FilterOperator.EQ, this.Customer.getBukrs()),
-        //     new Filter("Land1", FilterOperator.EQ, this.Customer.getLand1()),
-        //     new Filter("Spart", FilterOperator.EQ, this.Customer.getSpart()),
-        //     new Filter("Code", FilterOperator.EQ, sValue),
-        //     new Filter("Type", FilterOperator.EQ, 'COD_TROUBLE' )
-        // ];
-        // let oBinding = oEvent.getSource().getBinding("items");
-        // oBinding.filter(arrFilters);
+        let oFilter = new Filter({
+            filters: [
+                new Filter("Waerk", FilterOperator.Contains, sValue),
+                new Filter("Kunnr", FilterOperator.Contains, sValue),
+                new Filter("Vkorg", FilterOperator.Contains, sValue),
+                new Filter('Auart', FilterOperator.EQ, 'ZCBF')
+            ],
+            and: false
+        });
+        let oBinding = oEvent.getSource().getBinding("items") as ODataListBinding;
+        oBinding.filter([oFilter]);
     }
 
-    public onSelectEstimationNumber(oEvent: TableSelectDialog$ConfirmEvent): void {
+    public async onSelectEstimationNumber(oEvent: TableSelectDialog$ConfirmEvent): Promise<void> {
         const oSelectedContext: string[] = oEvent.getParameter("selectedContexts") || [];
-        let oSlctEstimationNumber = this.oCreateOrderModel.getProperty('/oSelectEstimationNumber');
-        // TODO: Crear funcionalidad de seleccion de datos por medio de un oData
-        for (const oSelectEstimationNumber of oSelectedContext) {
-            this.oCreateOrderModel.setProperty('/oSelectEstimationNumber', oSelectEstimationNumber);
+        for (const oSelect of oSelectedContext) {
+            // @ts-ignore
+            this.oCreateOrderModel.setProperty('/oSelectEstimationNumber', oSelect.getObject());
+            // @ts-ignore
+            this.oCreateOrderModel.setProperty('/oQuery/estimationNumber', oSelect.getObject().Vbeln);
+            // @ts-ignore
+            this.onEstimationNumber(null, oSelect.getObject().Vbeln);
         }
-        // Si el Odata no arroja ningun valor al seleccionar el numero de estimacion, se muestra mensaje de error  
-        if (oSlctEstimationNumber.length === 0) throw new Error(this.oI18n.getText("errorEstimationNumber"));
-
-
-        // let oSelectedContex = oEvent.getParameter("selectedContexts"),
-        //         that = this;
-        //     if (oSelectedContex) {
-        //         oSelectedContex.forEach(oSelect => {
-        //             that.idValueHelpsBrand.setValue(oSelect.getObject().VtextSpart);
-        //             that.setsLand1(oSelect.getObject().Land1);
-        //             that.setSpart(oSelect.getObject().Spart)
-        //             that.setsVtextSpart(oSelect.getObject().VtextSpart)
-        //         });
-        //     }
     }
 
-    public async onEstimationNumber(oEvent: Input$SubmitEvent): Promise<void> {
+    public async onEstimationNumber(oEvent: Input$SubmitEvent, sEstimationNumber: string): Promise<void> {
         try {
             BusyIndicator.show();
-            const sValue = oEvent.getParameter("value") || '';
+            const sValue = oEvent?.getParameter("value") || (sEstimationNumber || "");
 
             if (!sValue) throw new Error(this.oI18n.getText("errorEstimateNumber"));
 
             const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
                 DocNumber: sValue
             });
-            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV
-                // , {
-                // bParam: true,
-                // oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
-                // }
-            );
+            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV);
 
             // this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', true);
