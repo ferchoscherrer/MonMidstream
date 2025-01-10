@@ -57,13 +57,17 @@ export default class CreateOrder extends Controller {
     public async onOpenPopUpEstimationNumber(): Promise<void> {
 
         const oQuery = this.oCreateOrderModel.getProperty('/oQuery');
+        let arrFilter = [new Filter('Auart', FilterOperator.EQ, 'ZCBF')];
+        if (oQuery.selectCurrency) 
+            arrFilter.push(new Filter("Waerk", FilterOperator.EQ, oQuery.selectCurrency.CurrencyCode));
+        if (oQuery.selectRequest) 
+            arrFilter.push(new Filter("Kunnr", FilterOperator.EQ, oQuery.selectRequest.CustomerCode));
+        if (oQuery.selectSalesOrganization) 
+            arrFilter.push(new Filter("Vkorg", FilterOperator.EQ, oQuery.selectSalesOrganization.SalesOrgVta));
+
         const oFilter = new Filter({
-            filters: [
-                new Filter("Waerk", FilterOperator.EQ, oQuery.selectCurrency?.CurrencyCode || ''),
-                new Filter("Kunnr", FilterOperator.EQ, oQuery.selectRequest?.CustomerCode || ''),
-                new Filter("Vkorg", FilterOperator.EQ, oQuery.selectSalesOrganization?.SalesOrgVta || ""),
-                new Filter('Auart', FilterOperator.EQ, 'ZCBF')
-            ]
+            filters: arrFilter,
+            and: true
         });
 
         this.oFragmentEstimationNumber ??= await Fragment.load({

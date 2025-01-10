@@ -28,7 +28,7 @@
                     <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
                     <Input id="iptEstimationNumber" showValueHelp="true" value="{mCreateOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" submit=".onEstimationNumber"/>
                     <Label text="{i18n>request}" />
-                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectRequest/CompanyCode}} {=${mCreateOrder>/oQuery/selectRequest/Name1}}" valueHelpRequest="onOpenPopUpRequest"/>
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectRequest/CustomerCode}} {=${mCreateOrder>/oQuery/selectRequest/Name1}}" valueHelpRequest="onOpenPopUpRequest"/>
                     <Label text="{i18n>salesOrganization}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgVta}} {=${mCreateOrder>/oQuery/selectSalesOrganization/SalesOrgName}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
                     <!-- <Label text="{i18n>channel}" />
