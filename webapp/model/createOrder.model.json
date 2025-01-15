@@ -21,6 +21,9 @@
         },
         "oAcctionBtnViewSalesCreate":{
             "enabledSalesCreate": false
+        },
+        "oMessageStripErrorNoValidEstimationNumber": {
+            "visible": false
         }
 
     },

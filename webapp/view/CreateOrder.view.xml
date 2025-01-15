@@ -6,6 +6,13 @@
     xmlns:core="sap.ui.core"
 >
     <Page id="pgCreateOrder" backgroundDesign="List" floatingFooter="true" showHeader="false" enableScrolling="true" >
+        <MessageStrip 
+            text="{i18n>errorEstimationNumberNotFound}" 
+            type="Error" 
+            showIcon="true"
+            customIcon="sap-icon://alert"
+            visible="{mCreateOrder>/oConfig/oMessageStripErrorNoValidEstimationNumber/visible}"
+            class="sapUiResponsiveMargin" />
         <content>
             <f:SimpleForm 
                 editable="true"
@@ -43,10 +50,8 @@
                                 groupingSeparator: '.',
                                 decimalSeparator: ','
                             }
-                        
                         }" 
                         change="onChangeFormatterNumber"
-                    
                      />
                     <Label text="{i18n>currency}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mCreateOrder>/oQuery/selectCurrency/CurrencyCode}} {=${mCreateOrder>/oQuery/selectCurrency/CurrencyName}} " valueHelpRequest="onOpenPopUpCurrency" />
@@ -57,8 +62,14 @@
         <footer>
 			<Bar>
 				<contentRight>
-                    <Button id="btnDescestimationNumber" type="Accept" text="{i18n>create}" enabled="{mCreateOrder>/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate}" press="onOpenDetailSalesDocument"  />
-                    <Button type="Reject" text="{i18n>cancel}"/>
+                    <Button 
+                        id="btnDescestimationNumber" 
+                        type="Accept" 
+                        text="{i18n>create}" 
+                        enabled="{mCreateOrder>/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate}" 
+                        press="onOpenDetailSalesDocument"
+                        icon="sap-icon://create" />
+                    <Button type="Reject" text="{i18n>cancel}" icon="sap-icon://reset"/>
 				</contentRight>
 			</Bar>
 		</footer>

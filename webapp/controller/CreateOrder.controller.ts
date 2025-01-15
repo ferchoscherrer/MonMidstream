@@ -1,7 +1,6 @@
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Dialog from "sap/m/Dialog";
-import { SelectDialog$SearchEvent } from "sap/m/SelectDialog";
-import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$ConfirmEventParameters, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
+import { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
 import Router from "sap/ui/core/routing/Router";
@@ -9,17 +8,14 @@ import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import formatter from "../model/formatter";
-import Input, { Input$SubmitEvent } from "sap/m/Input";
-import { Input$ChangeEvent } from "sap/ui/webc/main/Input";
+import { Input$SubmitEvent } from "sap/m/Input";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ODataListBinding from "sap/ui/model/odata/v2/ODataListBinding";
-import Context from "sap/ui/model/odata/v2/Context";
 import MessageBox from "sap/m/MessageBox";
 import BusyIndicator from "sap/ui/core/BusyIndicator";
-import EventProvider from "sap/ui/base/EventProvider";
-import { ERP } from "../modules/ERP";
+import ERP from "com/triiari/retrobilling/modules/ERP";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
 
 
@@ -57,7 +53,7 @@ export default class CreateOrder extends Controller {
     public async onOpenPopUpEstimationNumber(): Promise<void> {
 
         const oQuery = this.oCreateOrderModel.getProperty('/oQuery');
-        let arrFilter = [new Filter('Auart', FilterOperator.EQ, 'ZCBF')];
+        let arrFilter = [new Filter('Auart', FilterOperator.EQ, 'ZTB1')];
         if (oQuery.selectCurrency) 
             arrFilter.push(new Filter("Waerk", FilterOperator.EQ, oQuery.selectCurrency.CurrencyCode));
         if (oQuery.selectRequest) 
@@ -89,7 +85,7 @@ export default class CreateOrder extends Controller {
                 new Filter("Waerk", FilterOperator.Contains, sValue),
                 new Filter("Kunnr", FilterOperator.Contains, sValue),
                 new Filter("Vkorg", FilterOperator.Contains, sValue),
-                new Filter('Auart', FilterOperator.EQ, 'ZCBF')
+                new Filter('Auart', FilterOperator.EQ, 'ZTB1')
             ],
             and: false
         });
@@ -105,34 +101,37 @@ export default class CreateOrder extends Controller {
             // @ts-ignore
             this.oCreateOrderModel.setProperty('/oQuery/estimationNumber', oSelect.getObject().Vbeln);
             // @ts-ignore
-            this.onEstimationNumber(null, oSelect.getObject().Vbeln);
+            this.getEstimationNumber(oSelect.getObject().Vbeln);
         }
     }
+    
+    public async onEstimationNumber(oEvent: Input$SubmitEvent) {
+        const sValue = oEvent?.getParameter("value") ?? "";
+        this.getEstimationNumber(sValue);
+    }
 
-    public async onEstimationNumber(oEvent: Input$SubmitEvent, sEstimationNumber: string): Promise<void> {
+    public async getEstimationNumber(sEstimationNumber: string): Promise<void> {
         try {
-            BusyIndicator.show();
-            const sValue = oEvent?.getParameter("value") || (sEstimationNumber || "");
+            BusyIndicator.show(0);
 
-            if (!sValue) throw new Error(this.oI18n.getText("errorEstimateNumber"));
+            if (!sEstimationNumber) throw new Error(this.oI18n.getText("errorEstimateNumber"));
 
             const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
-                DocNumber: sValue
+                DocNumber: sEstimationNumber
             });
-            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV);
+            await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV);
 
-            // this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', true);
-
+            this.oCreateOrderModel.setProperty('/oConfig/oMessageStripErrorNoValidEstimationNumber/visible', false);
         } catch (oError: any) {
             const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
             MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
 
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', false);
+            this.oCreateOrderModel.setProperty('/oConfig/oMessageStripErrorNoValidEstimationNumber/visible', true);
         } finally {
             BusyIndicator.hide();
         }
-
     }
 
     public async onOpenPopUpRequest(): Promise<void> {
@@ -283,47 +282,52 @@ export default class CreateOrder extends Controller {
     }
 
     public onOpenDetailSalesDocument(): void {
-        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
-
-        this.onQuerySalesOrder();
-
-        if (!oQueryData.bToRequiredQuery)
-            this.oRouter.navTo("RouteDetailSalesOrder", {
-                estimationNumber: oQueryData.estimationNumber
-            });
-    }
-
-    public async onQuerySalesOrder(): Promise<void> {
-        try {
-            BusyIndicator.show();
-            this.onValidateData();
-
+        try{
             const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
 
-            const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
-                DocNumber: oQueryData.estimationNumber
+            this.onValidateData();
+            this.oRouter.navTo("RouteDetailSalesOrder", {
+                estimationNumber: oQueryData.estimationNumber,
+                query: {
+                    factor: oQueryData.iFactor
+                }
             });
-            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, {
-                bParam: true,
-                oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
-            });
-
-            const arrSalesOrderItems =  oResponse.ToItems["results"];
-
-            for (const oItem of arrSalesOrderItems) {
-                oItem.editQuantity = false;
-                oItem.TargetValCalculate = oItem.NetValue * parseFloat(oQueryData.iFactor)
-            }
-            
-            this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
-
         } catch (oError: any) {
-            const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
-            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
-        } finally {
-            BusyIndicator.hide();
+            MessageBox.error(oError.message);
         }
     }
+
+    // public async onQuerySalesOrder(): Promise<void> {
+    //     try {
+    //         BusyIndicator.show();
+    //         this.onValidateData();
+
+    //         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+
+    //         const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
+    //             DocNumber: oQueryData.estimationNumber
+    //         });
+    //         const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, {
+    //             bParam: true,
+    //             oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
+    //         });
+
+    //         const arrSalesOrderItems =  oResponse.ToItems["results"];
+
+    //         for (const oItem of arrSalesOrderItems) {
+    //             oItem.editQuantity = false;
+    //             oItem.TargetValCalculate = oItem.NetValue * parseFloat(oQueryData.iFactor)
+    //         }
+            
+    //         this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
+
+    //     } catch (oError: any) {
+    //         const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
+    //         MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+    //     } finally {
+    //         BusyIndicator.hide();
+    //     }
+    // }
 
     public onValidateData() : void {
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
@@ -333,8 +337,10 @@ export default class CreateOrder extends Controller {
             !oQueryData.estimationNumber || !oQueryData.iFactor
         );
 
-        if (!oQueryData.estimationNumber)  throw new Error(this.oI18n.getText("errorEstimateNumberEmpty"));
-        if (!oQueryData.iFactor)  throw new Error(this.oI18n.getText("errorFactorEmpty"));
+        if (!oQueryData.estimationNumber) 
+            throw new Error(this.oI18n.getText("errorEstimateNumberEmpty"));
+        if (!oQueryData.iFactor) 
+            throw new Error(this.oI18n.getText("errorFactorEmpty"));       
     }
 
 }

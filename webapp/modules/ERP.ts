@@ -22,7 +22,7 @@ type MessageContainer = {
     messages: Array<string>
 }
 
-export class ERP {
+export default class ERP {
     
     static getDataERP(_sEntity : string, _oService: ODataModel, _aFilter: Filter[] | undefined,
         oParam: ODataParameter = { 

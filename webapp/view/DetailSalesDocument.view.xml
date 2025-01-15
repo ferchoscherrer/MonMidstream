@@ -58,7 +58,7 @@
                         />
                         <Label text="{i18n>request}" />
                         <Text text="" />
-                        <Label text="{i18n>recipient}" />
+                        <Label text="{i18n>request}" />
                         <Text text="{mCreateOrder>/oSalesOrder/SoldTo}"/>
                         <Label text="{i18n>orderNoCustomer}" />
                         <Text text="{mCreateOrder>/oSalesOrder/PurchNo}" />
@@ -124,6 +124,14 @@
                             <Text text="{path: 'mCreateOrder>Material'}"/>
                         </t:template>
                     </t:Column>
+
+                    <t:Column >
+                        <Text text="{i18n>description}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>ShortText'}"/>
+                        </t:template>
+                    </t:Column>
+
                     <t:Column >
                         <Text text="{i18n>quantity}"/>
                         <t:template >
@@ -131,6 +139,15 @@
                             <!-- <Text text="{path: 'mCreateOrder>TargetQty'}"/> -->
                         </t:template>
                     </t:Column>
+
+                    <t:Column >
+                        <Text text="{i18n>umb}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>TargetQu'}"/>
+                        </t:template>
+                    </t:Column>
+
+                    
                     <t:Column >
                         <Text text="{i18n>currency}"/>
                         <t:template>
