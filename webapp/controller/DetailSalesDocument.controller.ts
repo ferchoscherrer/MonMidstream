@@ -86,7 +86,7 @@ export default class DetailSalesDocument extends Controller {
 
     public async onQuerySalesOrder(sSalesOrder: string ): Promise<void> {
         try {
-            BusyIndicator.show();
+            BusyIndicator.show(0);
 
             const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
 

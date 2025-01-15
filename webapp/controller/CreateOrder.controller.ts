@@ -315,7 +315,6 @@ export default class CreateOrder extends Controller {
     }
 
     public onClearFilter() : void {
-
         const arrClearString = ['/estimationNumber', '/request', '/salesOrganization', '/channel', '/currency'];
         const arrClearNull = ['/selectSalesOrganization', '/selectRequest', '/selectChannel', '/selectCurrency'];
         const arrClearConfigFlags = ['/oAcctionTblItemSalesDocument/enabled', '/oAcctionTblItemSalesDocument/enabled', 
@@ -335,11 +334,12 @@ export default class CreateOrder extends Controller {
         });
 
         arrClearObj.forEach( sValue => {
-            this.oCreateOrderModel.setProperty(`/oConfig${sValue}`, null);
+            this.oCreateOrderModel.setProperty(`${sValue}`, null);
         });
 
         this.oCreateOrderModel.setProperty(`/oConfig/bToRequiredQuery`, true);
         this.oCreateOrderModel.setProperty(`/oQuery/iFactor`, 0);
+        this.oCreateOrderModel.refresh(true);
     }
 
 }
