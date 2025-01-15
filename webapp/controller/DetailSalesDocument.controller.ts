@@ -14,6 +14,7 @@ import { Input$SubmitEvent } from "sap/m/Input";
 import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
+import EventBus from "sap/ui/core/EventBus";
 // import { ERP } from "../modules/ERP";
 
 interface DetailRouteArg {
@@ -196,5 +197,10 @@ export default class DetailSalesDocument extends Controller {
         arrItemsTable[iColumnEditSalesDocument].editQuantity = false;
         oTblSalesDocument.removeSelectionInterval(0,arrItemsTable.length);
         this.oCreateOrderModel.refresh(true);
+    }
+
+    public onClose() {
+        this.oRouter.navTo("RouteMain");
+        EventBus.getInstance().publish("CreateOrder", "clear");
     }
 }

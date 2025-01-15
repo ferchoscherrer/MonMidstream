@@ -17,7 +17,7 @@
                     <Title text="{=${i18n>order}} {=${mCreateOrder>/oSalesOrder/DocNumber}}" />
                 </f:heading>
                 <f:actions>
-                    <Button tooltip="{i18n>close}" icon="sap-icon://decline"  />
+                    <Button tooltip="{i18n>close}" icon="sap-icon://decline" press=".onClose" />
                 </f:actions>
             </f:DynamicPageTitle>
         </f:title>
@@ -72,7 +72,17 @@
                         <Label text="{i18n>sector}" />
                         <Text text="{mCreateOrder>/oSalesOrder/Division}"/>
                         <Label text="{i18n>factor}" />
-                        <Text text="{mCreateOrder>/oQuery/iFactor}"/>
+                        <Text text="{
+                            path: 'mCreateOrder>/oQuery/iFactor',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: {
+                                groupingEnabled: true,
+                                groupingSeparator: ',',
+                                decimalSeparator: '.',
+                                minFractionDigits: 2,
+                                maxFractionDigits: 2
+                            }
+                        }"/>
                     </form:content>
                 </form:SimpleForm>
             </f:DynamicPageHeader>
@@ -145,25 +155,43 @@
                         <t:template >
                             <Text text="{path: 'mCreateOrder>TargetQu'}"/>
                         </t:template>
-                    </t:Column>
-
-                    
+                    </t:Column>                    
                     <t:Column >
                         <Text text="{i18n>currency}"/>
                         <t:template>
                             <Text text="{path: 'mCreateOrder>Currency'}"/>
                         </t:template>
                     </t:Column>
-                    <t:Column >
+                    <t:Column hAlign="End">
                         <Text text="{i18n>netValue}"/>
                         <t:template>
-                            <Text text="{path: 'mCreateOrder>NetValue'}"/>
+                            <Text text="{
+                                path: 'mCreateOrder>NetValue',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: {
+                                    groupingEnabled: true,
+                                    groupingSeparator: ',',
+                                    decimalSeparator: '.',
+                                    minFractionDigits: 2,
+                                    maxFractionDigits: 2
+                                }
+                            }"/>
                         </t:template>
                     </t:Column>	
-                    <t:Column >
+                    <t:Column hAlign="End">
                         <Text text="{i18n>updatedPrice}"/>
                         <t:template>
-                            <Text text="{path: 'mCreateOrder>TargetValCalculate'}"/>
+                            <Text text="{
+                                path: 'mCreateOrder>TargetValCalculate',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: {
+                                    groupingEnabled: true,
+                                    groupingSeparator: ',',
+                                    decimalSeparator: '.',
+                                    minFractionDigits: 2,
+                                    maxFractionDigits: 2
+                                }
+                            }"/>
                         </t:template>
                     </t:Column>	
                     <t:Column width="4rem" hAlign="Center" >
@@ -184,7 +212,7 @@
         <f:footer>
             <OverflowToolbar >
                 <ToolbarSpacer />
-                <Button type="Reject" text="{i18n>cancel}" press="." icon="sap-icon://undo"  />
+                <Button type="Reject" text="{i18n>cancel}" press=".onClose" icon="sap-icon://undo"  />
                 <Button type="Accept" text="{i18n>createOrder}" press="." icon="sap-icon://create-form"  />
             </OverflowToolbar>
         </f:footer>

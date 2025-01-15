@@ -167,6 +167,7 @@
           "name": "RouteDetailSalesOrder",
           "pattern": "detail/{estimationNumber}{?query}",
           "target": [
+            "TargetMain",
             "TargetDetailSalesOrder"
           ]
         }

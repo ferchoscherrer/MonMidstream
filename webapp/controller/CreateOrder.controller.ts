@@ -17,6 +17,7 @@ import MessageBox from "sap/m/MessageBox";
 import BusyIndicator from "sap/ui/core/BusyIndicator";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
+import EventBus from "sap/ui/core/EventBus";
 
 
 /**
@@ -48,6 +49,8 @@ export default class CreateOrder extends Controller {
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.ZSD_SALES_DOC_GET_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_DOC_GET_SRV_01") as ODataModel;
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
+
+        EventBus.getInstance().subscribe("CreateOrder", "clear", this.onClearFilter.bind(this));
     }
 
     public async onOpenPopUpEstimationNumber(): Promise<void> {
@@ -124,7 +127,7 @@ export default class CreateOrder extends Controller {
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', true);
             this.oCreateOrderModel.setProperty('/oConfig/oMessageStripErrorNoValidEstimationNumber/visible', false);
         } catch (oError: any) {
-            const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
+            const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumberSubmit");
             MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
 
             this.oCreateOrderModel.setProperty('/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate', false);
@@ -297,38 +300,6 @@ export default class CreateOrder extends Controller {
         }
     }
 
-    // public async onQuerySalesOrder(): Promise<void> {
-    //     try {
-    //         BusyIndicator.show();
-    //         this.onValidateData();
-
-    //         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
-
-    //         const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
-    //             DocNumber: oQueryData.estimationNumber
-    //         });
-    //         const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, {
-    //             bParam: true,
-    //             oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
-    //         });
-
-    //         const arrSalesOrderItems =  oResponse.ToItems["results"];
-
-    //         for (const oItem of arrSalesOrderItems) {
-    //             oItem.editQuantity = false;
-    //             oItem.TargetValCalculate = oItem.NetValue * parseFloat(oQueryData.iFactor)
-    //         }
-            
-    //         this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
-
-    //     } catch (oError: any) {
-    //         const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
-    //         MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
-    //     } finally {
-    //         BusyIndicator.hide();
-    //     }
-    // }
-
     public onValidateData() : void {
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
 
@@ -341,6 +312,34 @@ export default class CreateOrder extends Controller {
             throw new Error(this.oI18n.getText("errorEstimateNumberEmpty"));
         if (!oQueryData.iFactor) 
             throw new Error(this.oI18n.getText("errorFactorEmpty"));       
+    }
+
+    public onClearFilter() : void {
+
+        const arrClearString = ['/estimationNumber', '/request', '/salesOrganization', '/channel', '/currency'];
+        const arrClearNull = ['/selectSalesOrganization', '/selectRequest', '/selectChannel', '/selectCurrency'];
+        const arrClearConfigFlags = ['/oAcctionTblItemSalesDocument/enabled', '/oAcctionTblItemSalesDocument/enabled', 
+            '/oAcctionBtnViewSalesCreate/enabledSalesCreate'];
+        const arrClearObj = ['/oSalesOrder', '/oSelectEstimationNumber'];
+
+        arrClearString.forEach( sValue => {
+            this.oCreateOrderModel.setProperty(`/oQuery${sValue}`, '');
+        });
+
+        arrClearNull.forEach( sValue => {
+            this.oCreateOrderModel.setProperty(`/oQuery${sValue}`, null);
+        });
+
+        arrClearConfigFlags.forEach( sValue => {
+            this.oCreateOrderModel.setProperty(`/oConfig${sValue}`, false);
+        });
+
+        arrClearObj.forEach( sValue => {
+            this.oCreateOrderModel.setProperty(`/oConfig${sValue}`, null);
+        });
+
+        this.oCreateOrderModel.setProperty(`/oConfig/bToRequiredQuery`, true);
+        this.oCreateOrderModel.setProperty(`/oQuery/iFactor`, 0);
     }
 
 }
