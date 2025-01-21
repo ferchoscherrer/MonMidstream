@@ -108,7 +108,7 @@
                         <!-- <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" /> -->
                         <Title text="{i18n>items} ({= ${mCreateOrder>/oSalesOrder/ToItems/results}.length })" />
                         <ToolbarSpacer/>
-                        <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/>
+                        <!-- <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/> -->
                         <Button text="{i18n>edit}" press=".editSelectedPositions" type="Emphasized" icon="sap-icon://edit"
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}"
                         />
@@ -116,7 +116,8 @@
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
                         />
                         <ToolbarSeparator />
-                        <Button press=".onOpenPositionPartitioning" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
+                        <!-- onOpenPositionPartitioning -->
+                        <Button press=".onConfirmCopyPosition" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
                             type="Default" icon="sap-icon://copy" tooltip="{i18n>copy}"
                         />
                     </OverflowToolbar>

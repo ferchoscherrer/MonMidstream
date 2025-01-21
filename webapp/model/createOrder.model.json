@@ -27,6 +27,7 @@
         }
 
     },
+    "iQuantityPartition": 3,
     "oSalesOrder": null,
     "oSelectEstimationNumber" : null,
     "testData":[

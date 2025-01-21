@@ -1,0 +1,167 @@
+<core:FragmentDefinition xmlns:rowmodes="sap.ui.table.rowmodes" xmlns:table="sap.ui.table"
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+    <Dialog 
+        showHeader="false"
+        contentHeight="80%"
+        contentWidth="70%"
+        draggable="true"
+        resizable="true"
+        afterClose="">
+        <Page 
+            showHeader="true" 
+            showFooter="true"
+            showSubHeader="true"
+            title="Servicios"
+            class="sapUiResponsivePadding--content">
+            <!-- <subHeader>
+                <OverflowToolbar style="Clear">
+                    <FlexBox width="100%" justifyContent="Start">
+                        <GenericTag text="{i18n>originalAmountPosition}" status="Success" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="699" unit="MXN" />
+                        </GenericTag>
+                        <GenericTag text="{i18n>amountAssigned}" status="Information" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="800" unit="MXN" />
+                        </GenericTag>
+                        <GenericTag text="{i18n>originalOverrunAmount}" status="Error" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber number="101" unit="MXN" />
+                        </GenericTag>
+                    </FlexBox>
+                </OverflowToolbar>
+            </subHeader> -->
+            <content>
+                <t:TreeTable 
+                    alternateRowColors="true"
+                    busyIndicatorDelay="0"
+                    enableColumnFreeze="true"
+                    enableSelectAll="false"
+                    enableColumnReordering="false"
+                    showNoData="true"
+                    rows=""
+                    selectionMode="None">
+                    <!-- rows="{mCreateOrder>/oDetailSalesDocument/items}" -->
+                    <t:rowMode>
+                        <rowmodes:Auto  />
+                    </t:rowMode>
+                    <t:extension>
+                        <OverflowToolbar style="Clear">
+                            <!-- <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" /> -->
+                            <Title text="{i18n>items} (10)" />
+                            <ToolbarSpacer/>
+                            <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/>
+                            <Button text="{i18n>edit}" press=".editSelectedPositions" type="Emphasized" icon="sap-icon://edit"
+                                enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}"
+                            />
+                            <Button text="{i18n>delete}" press=".onConfirmRemovePosition" type="Emphasized" icon="sap-icon://decline"
+                                enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
+                            />
+                            <ToolbarSeparator />
+                            <Button press=".onOpenPositionPartitioning" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
+                                type="Default" icon="sap-icon://copy" tooltip="{i18n>copy}"
+                            />
+                        </OverflowToolbar>
+                    </t:extension>
+                    <t:columns >
+                        <t:Column>
+                            <Text text="Descripcion" />
+                            <t:template >
+                                <Text text="{path: 'mCreateOrder>ItmNumber'}"/>
+                            </t:template>
+                        </t:Column>
+                        <t:Column width="6rem" hAlign="Center" >
+                            <Text text="{i18n>pos}" />
+                            <t:template >
+                                <Text text="{path: 'mCreateOrder>ItmNumber'}"/>
+                            </t:template>
+                        </t:Column>
+                        <t:Column >
+                            <Text text="{i18n>material}"/>
+                            <t:template >
+                                <Text text="{path: 'mCreateOrder>Material'}"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column >
+                            <Text text="{i18n>description}"/>
+                            <t:template >
+                                <Text text="{path: 'mCreateOrder>ShortText'}"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column >
+                            <Text text="{i18n>quantity}"/>
+                            <t:template >
+                                <Input value="{path: 'mCreateOrder>TargetQty'}" editable="{path: 'mCreateOrder>editQuantity'}" submit=".submitQuantity" />
+                                <!-- <Text text="{path: 'mCreateOrder>TargetQty'}"/> -->
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column >
+                            <Text text="{i18n>umb}"/>
+                            <t:template >
+                                <Text text="{path: 'mCreateOrder>TargetQu'}"/>
+                            </t:template>
+                        </t:Column>                    
+                        <t:Column >
+                            <Text text="{i18n>currency}"/>
+                            <t:template>
+                                <Text text="{path: 'mCreateOrder>Currency'}"/>
+                            </t:template>
+                        </t:Column>
+                        <t:Column hAlign="End">
+                            <Text text="{i18n>netValue}"/>
+                            <t:template>
+                                <Text text="{
+                                    path: 'mCreateOrder>NetValue',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        groupingSeparator: ',',
+                                        decimalSeparator: '.',
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2
+                                    }
+                                }"/>
+                            </t:template>
+                        </t:Column>	
+                        <t:Column hAlign="End">
+                            <Text text="{i18n>updatedPrice}"/>
+                            <t:template>
+                                <Text text="{
+                                    path: 'mCreateOrder>TargetValCalculate',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        groupingSeparator: ',',
+                                        decimalSeparator: '.',
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2
+                                    }
+                                }"/>
+                            </t:template>
+                        </t:Column>	
+                        <t:Column width="4rem" hAlign="Center" >
+                            <t:template>
+                                <Button icon="sap-icon://journey-arrive" press="." />
+                            </t:template>
+                        </t:Column>	
+                    </t:columns>
+                    <t:noData>
+                        <IllustratedMessage
+                            illustrationType="sapIllus-SimpleEmptyList"
+                            enableVerticalResponsiveness="true"
+                            title="{i18n>thereAreNotEntriesYet}"
+                            description="{i18n>thereAreNotEntriesYetDesc}"/>
+                    </t:noData>
+                </t:TreeTable>
+            </content>
+            <footer>
+                <OverflowToolbar>
+                    <ToolbarSpacer />
+                    <Button text="{i18n>divide}" type="Accept" icon="sap-icon://split" press=".onPositionPartitioning" />
+                    <Button text="{i18n>cancel}" type="Reject" icon="sap-icon://reset" press=".onClosenPositionPartitioning"/>
+                </OverflowToolbar>
+            </footer>
+        </Page>
+    </Dialog>
+</core:FragmentDefinition>

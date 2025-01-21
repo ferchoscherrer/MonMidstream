@@ -10,11 +10,17 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import UIComponent from "sap/ui/core/UIComponent";
 import BusyIndicator from "sap/ui/core/BusyIndicator";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
-import { Input$SubmitEvent } from "sap/m/Input";
+import Input, { Input$SubmitEvent } from "sap/m/Input";
 import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
+import { ItemOrder } from "../model/types";
+import { DialogType } from "sap/m/library";
+import Label from "sap/m/Label";
+import Float from "sap/ui/model/type/Float";
+import Button from "sap/m/Button";
+import StepInput from "sap/m/StepInput";
 // import { ERP } from "../modules/ERP";
 
 interface DetailRouteArg {
@@ -36,6 +42,7 @@ export default class DetailSalesDocument extends Controller {
     private oCreateOrderModel: JSONModel;
     private oRouter : Router;
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
+    private oDialogConfirmPosition : Dialog; 
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
@@ -165,6 +172,7 @@ export default class DetailSalesDocument extends Controller {
         }
 
         this.oCreateOrderModel.setProperty('/oSalesOrder/ToItems/results', arrPurgedItems);
+        this.onRemoveSelectionItem();
     }
 
     public onConfirmRemovePosition(): void {
@@ -172,9 +180,13 @@ export default class DetailSalesDocument extends Controller {
             actions: [this.oI18n.getText('not') || '', this.oI18n.getText('yes') || ''],
             emphasizedAction: this.oI18n.getText('yes'),
             onClose: (sAction: string) => {
-                if (sAction !== this.oI18n.getText('yes')) return;
+                if (sAction !== this.oI18n.getText('yes')) {
+                    this.onRemoveSelectionItem();
+                    return;
+                }
 
                 this.removeSelectedPositions();
+                this.onCalculteAllPositions();
             },
             dependentOn: this.getView()
         });
@@ -202,5 +214,112 @@ export default class DetailSalesDocument extends Controller {
     public onClose() {
         this.oRouter.navTo("RouteMain");
         EventBus.getInstance().publish("CreateOrder", "clear");
+    }
+
+    public onConfirmCopyPosition(): void {
+
+        const oSelectItem = structuredClone(this.onSelectItem());
+
+        MessageBox.warning(this.oI18n.getText('confirmDividePosition', [oSelectItem.ItmNumber]) || '', {
+            actions: [this.oI18n.getText('not') || '', this.oI18n.getText('yes') || ''],
+            emphasizedAction: this.oI18n.getText('yes'),
+            onClose: (sAction: string) => {
+                if (sAction !== this.oI18n.getText('yes')) {
+                    this.onCopyPosition(oSelectItem);
+                    this.onRemoveSelectionItem();
+                }else{
+                    this.onDividePosition();
+                }
+            },
+            dependentOn: this.getView()
+        });
+    }
+
+    public onSelectItem() : ItemOrder {
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        const arrSelectedIndices = oTblSalesDocument.getSelectedIndices();
+        let oSelectItemOrder;
+
+        for(let i = 0; i < arrItemsTable.length; i++) {
+            if(arrSelectedIndices.includes(i)){
+                oSelectItemOrder = arrItemsTable[i] ;
+                break;
+            }
+        }
+
+        return oSelectItemOrder;
+    }
+
+    public onCopyPosition(oSelectItem: ItemOrder) : void {
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        const iLength = arrItemsTable.length;
+        const iCalculatePosition : number = (iLength*10) + 10;
+        oSelectItem.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
+        arrItemsTable.push(oSelectItem);
+        this.oCreateOrderModel.refresh(true);
+    }
+
+    public onDividePosition() : void {
+        if (!this.oDialogConfirmPosition){
+            this.oDialogConfirmPosition = new Dialog(
+                {
+					type: DialogType.Message,
+					title: this.oI18n.getText('Confirm'),
+                    icon: "sap-icon://hint",
+					content: [
+                        new Label({
+                            text: this.oI18n.getText('quantityDivide')
+                        }),
+                        // validate function add model
+                        new StepInput({
+                            min:0,
+                            value: {
+                                path: "mCreateOrder>/iQuantityPartition"
+                            }
+                        })
+					],
+					beginButton: new Button({
+                        type: "Accept",
+                        icon: "sap-icon://open-command-field",
+                        text: this.oI18n.getText("continue"),
+                        press: () => {
+                            this.onOpenPositionPartitioning();
+                            this.oDialogConfirmPosition.close();
+                        }
+                    }),
+                    endButton: new Button({
+                        type: "Reject",
+                        text: this.oI18n.getText('cancel'),
+                        icon: "sap-icon://reset",
+                        press:  () => {
+                            this.oCreateOrderModel.setProperty("/iQuantityPartition", 0);
+                            this.onRemoveSelectionItem();
+                            this.oDialogConfirmPosition.close();
+                        }
+                    })
+				}
+            )
+        }
+
+        this.oDialogConfirmPosition.open();
+    }
+
+    public onRemoveSelectionItem() : void {
+        const oTblSalesDocument = this.byId("tblItemsSaleDocument") as Table;
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        oTblSalesDocument.removeSelectionInterval(0,arrItemsTable.length);
+    }
+
+    public onCalculteAllPositions() : void {
+        const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        
+        for(let i = 0; i < arrItemsTable.length; i++){
+            let oItemOrder = arrItemsTable[i];
+            const iCalculatePosition : number = (i+1)*10;
+            oItemOrder.ItmNumber = iCalculatePosition.toString().padStart(6, '0');
+        }
+
+        this.oCreateOrderModel.refresh(true);
     }
 }
