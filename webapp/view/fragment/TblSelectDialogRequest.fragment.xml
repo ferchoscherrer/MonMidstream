@@ -7,7 +7,7 @@
 		search=".onSearchRequest"
 		confirm=".onSelectRequest"
 		showClearButton="true"
-		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/CustomerSet'}"
+		items= "{path : 'ZGW_MAINSTREAM_CATALOGS_SRV>/CustomerGlobalSet'}"
 		contentHeight= "30%"
 		contentWidth="30%"
 		resizable="true">

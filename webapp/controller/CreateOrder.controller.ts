@@ -138,6 +138,17 @@ export default class CreateOrder extends Controller {
     }
 
     public async onOpenPopUpRequest(): Promise<void> {
+
+        const oQuery = this.oCreateOrderModel.getProperty('/oQuery');
+        let arrFilter = [];
+        if (oQuery.selectSalesOrganization) 
+            arrFilter.push(new Filter("CompanyCode", FilterOperator.EQ, oQuery.selectSalesOrganization.SalesOrgVta));
+
+        const oFilter = new Filter({
+            filters: arrFilter,
+            and: true
+        });
+
         this.oFragmentRequest ??= await Fragment.load({
             id: this.getView()?.getId(),
             name: "com.triiari.retrobilling.view.fragment.TblSelectDialogRequest",
@@ -145,6 +156,8 @@ export default class CreateOrder extends Controller {
         }) as Dialog;
 
         this.getView()?.addDependent(this.oFragmentRequest);
+        const oBinding = this.oFragmentRequest.getBinding("items") as ODataListBinding;
+        oBinding.filter(oFilter);
         this.oFragmentRequest.open();
     }
 
