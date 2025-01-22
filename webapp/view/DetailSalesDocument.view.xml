@@ -98,11 +98,19 @@
                 showNoData="true"
                 rowSelectionChange="onSelectRowItemSaleDocument"
                 rows="{mCreateOrder>/oSalesOrder/ToItems/results}"
-                selectionMode="MultiToggle">
+                selectionMode="MultiToggle"
+                rowActionCount="1">
                 <!-- rows="{mCreateOrder>/oDetailSalesDocument/items}" -->
                 <t:rowMode>
                     <rowmodes:Auto  />
                 </t:rowMode>
+                <t:rowActionTemplate>
+                    <t:RowAction >
+                        <t:items>
+                            <t:RowActionItem icon="sap-icon://journey-arrive" press=".onOpenServicesFragment" />
+                        </t:items>
+                    </t:RowAction>
+                </t:rowActionTemplate>
                 <t:extension>
                     <OverflowToolbar style="Clear">
                         <!-- <Title text="{i18n>items} ({= ${mCreateOrder>/oDetailSalesDocument/items}.length })" /> -->
@@ -193,11 +201,6 @@
                                     maxFractionDigits: 2
                                 }
                             }"/>
-                        </t:template>
-                    </t:Column>	
-                    <t:Column width="4rem" hAlign="Center" >
-                        <t:template>
-                            <Button icon="sap-icon://journey-arrive" press="." />
                         </t:template>
                     </t:Column>	
                 </t:columns>

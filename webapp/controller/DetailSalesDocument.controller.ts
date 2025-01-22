@@ -10,17 +10,19 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import UIComponent from "sap/ui/core/UIComponent";
 import BusyIndicator from "sap/ui/core/BusyIndicator";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
-import Input, { Input$SubmitEvent } from "sap/m/Input";
+import Input, { Input$LiveChangeEvent, Input$SubmitEvent } from "sap/m/Input";
 import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder } from "../model/types";
+import { ItemOrder, Service, ServicesConditions } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
 import Float from "sap/ui/model/type/Float";
 import Button from "sap/m/Button";
 import StepInput from "sap/m/StepInput";
+import { RowActionItem$PressEvent } from "sap/ui/table/RowActionItem";
+import { InputBase$ChangeEvent } from "sap/m/InputBase";
 // import { ERP } from "../modules/ERP";
 
 interface DetailRouteArg {
@@ -36,6 +38,7 @@ interface DetailRouteArg {
 export default class DetailSalesDocument extends Controller {
 
     private oFragmentPositionPartitioning: Dialog | undefined;
+    private oFragmentServices: Dialog | undefined;
     private oInfoTemp: JSONModel;
     private oI18nModel: ResourceModel;
     private oI18n: ResourceBundle;
@@ -101,9 +104,8 @@ export default class DetailSalesDocument extends Controller {
                 DocNumber: sSalesOrder
             });
            
-            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, {
-                bParam: true,
-                oParameter: { $expand: 'ToItems,ToConditions,ToPartners,ToServices' }
+            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, { 
+                $expand: 'ToItems,ToConditions,ToPartners,ToServices' 
             });
 
             const arrSalesOrderItems =  oResponse.ToItems["results"];
@@ -136,11 +138,35 @@ export default class DetailSalesDocument extends Controller {
     }
 
     public onPositionPartitioning() {
-        MessageToast.show("Particinado papu");
+        const arrPartitionByItem : ItemOrder[] = this.oCreateOrderModel.getProperty("/arrPartitionByItem");
+
+        let arrItemsTable : ItemOrder[] = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+
+        for (let i=0; i < arrPartitionByItem.length; i++){
+            const oItemPartition = arrPartitionByItem[i];
+            let oFindItemsTable = arrItemsTable.find( (oItem: ItemOrder) => oItem.ItmNumber === oItemPartition.ItmNumber);
+            if (oFindItemsTable){
+                oFindItemsTable.NetValue = oItemPartition.NetValue;
+                continue;
+            }
+            arrItemsTable.push(oItemPartition);
+        }
+
+        this.oCreateOrderModel.refresh(true);
         this.onClosenPositionPartitioning();
+        this.onRemoveSelectionItem();
+        this.onCalculateItemsOrder();
     }
 
     public onClosenPositionPartitioning() {
+        this.oCreateOrderModel.setProperty("/arrPartitionByItem", []);
+        this.oCreateOrderModel.setProperty("/oConfig/oAcctionTblItemPartition/enabled", true);
+        this.oCreateOrderModel.setProperty("/iNetValuePartititionByItem", 0);
+        this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", 0);
+        this.oCreateOrderModel.setProperty("/iCalculateAmountExceeded", 0);
+        this.oCreateOrderModel.setProperty("/sUMBPartititionByItem", '');
+        this.oCreateOrderModel.setProperty("/iQuantityPartition", 1);
+        this.oCreateOrderModel.refresh(true);
         this.oFragmentPositionPartitioning?.close();
     }
 
@@ -271,12 +297,9 @@ export default class DetailSalesDocument extends Controller {
                         new Label({
                             text: this.oI18n.getText('quantityDivide')
                         }),
-                        // validate function add model
                         new StepInput({
                             min:0,
-                            value: {
-                                path: "mCreateOrder>/iQuantityPartition"
-                            }
+                            value: "{mCreateOrder>/iQuantityPartition}"
                         })
 					],
 					beginButton: new Button({
@@ -284,6 +307,7 @@ export default class DetailSalesDocument extends Controller {
                         icon: "sap-icon://open-command-field",
                         text: this.oI18n.getText("continue"),
                         press: () => {
+                            this.onCalculatePartition();
                             this.onOpenPositionPartitioning();
                             this.oDialogConfirmPosition.close();
                         }
@@ -299,7 +323,8 @@ export default class DetailSalesDocument extends Controller {
                         }
                     })
 				}
-            )
+            );
+            this.getView()?.addDependent(this.oDialogConfirmPosition);
         }
 
         this.oDialogConfirmPosition.open();
@@ -311,13 +336,155 @@ export default class DetailSalesDocument extends Controller {
         oTblSalesDocument.removeSelectionInterval(0,arrItemsTable.length);
     }
 
-    public onCalculteAllPositions() : void {
+    public onCalculteAllPositions(): void {
         const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
-        
-        for(let i = 0; i < arrItemsTable.length; i++){
+
+        for (let i = 0; i < arrItemsTable.length; i++) {
             let oItemOrder = arrItemsTable[i];
-            const iCalculatePosition : number = (i+1)*10;
+            const iCalculatePosition: number = (i + 1) * 10;
             oItemOrder.ItmNumber = iCalculatePosition.toString().padStart(6, '0');
+        }
+
+        this.oCreateOrderModel.refresh(true);
+    }
+
+    public onCalculatePartition() : void {
+        const oSelectItem = this.onSelectItem();
+        const iNumberPartition =  parseFloat(this.oCreateOrderModel.getProperty("/iQuantityPartition")) + 1;
+        const iNetValue = parseFloat(oSelectItem.NetValue); 
+        const iNetValueByPartition = iNetValue / iNumberPartition;
+
+        const arrOrderItems = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        const iLengthOrderItems = arrOrderItems.length;
+
+        let arrPartitionByItem : ItemOrder[] = [];
+
+        for(let i = 0; i<iNumberPartition; i++){
+            const oSelectItemByPartition = structuredClone(oSelectItem);
+            oSelectItemByPartition.NetValue = iNetValueByPartition.toFixed(2);
+            let iLengthArrPartitionByItem = arrPartitionByItem.length;
+            let iCalculatePosition  = 0;
+            if (i !== 0)  {
+                iCalculatePosition = (iLengthOrderItems + iLengthArrPartitionByItem) * 10;
+                oSelectItemByPartition.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
+            }
+            arrPartitionByItem.push(oSelectItemByPartition);
+        }
+
+        this.oCreateOrderModel.setProperty("/iNetValuePartititionByItem", iNetValue);
+        this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", iNetValue);
+        this.oCreateOrderModel.setProperty("/sUMBPartititionByItem", oSelectItem.TargetQu);
+        this.oCreateOrderModel.setProperty("/arrPartitionByItem", arrPartitionByItem);
+        this.oCreateOrderModel.refresh(true);
+    }
+
+    public onCalculateAmountAssignedPartitionByItem() : void{
+        const arrPartitionByItem = this.oCreateOrderModel.getProperty("/arrPartitionByItem");
+        const iNetValuePartititionByItem = parseFloat(this.oCreateOrderModel.getProperty("/iNetValuePartititionByItem"));
+
+        let iCalculateAmountExceeded = 0;
+        let iCalculateModifiedValuePartititionByItem = 0;
+
+        arrPartitionByItem.forEach((oItem : ItemOrder) => {
+            iCalculateModifiedValuePartititionByItem += parseFloat(oItem.NetValue);
+        });
+
+        iCalculateAmountExceeded = iNetValuePartititionByItem - iCalculateModifiedValuePartititionByItem;
+
+        this.oCreateOrderModel.setProperty("/iCalculateAmountExceeded", iCalculateAmountExceeded < 0 ? Math.abs(iCalculateAmountExceeded) : '');
+        this.oCreateOrderModel.setProperty("/oConfig/oAcctionTblItemPartition/enabled", !(iCalculateAmountExceeded < 0));
+        this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", iCalculateModifiedValuePartititionByItem);
+        this.oCreateOrderModel.refresh(true);
+
+    }
+
+    public async onOpenServicesFragment(oEvent: RowActionItem$PressEvent) {
+        const oButton = oEvent.getSource();
+        const oContext = oButton.getBindingContext("mCreateOrder");
+        const oInfoRow = oContext?.getObject() as ItemOrder;
+        try {
+            BusyIndicator.show(0);
+            this.oFragmentServices ??= await Fragment.load({
+                name: "com.triiari.retrobilling.view.fragment.Services",
+                id: this.getView()?.getId(),
+                controller: this
+            }) as Dialog;
+    
+            this.getView()?.addDependent(this.oFragmentServices);
+    
+            const arrServicesConditions = await this.getServicesConditions();
+            const oServiceCondition = arrServicesConditions.find(oServiceCond => oServiceCond.ItmNumber === oInfoRow.ItmNumber);
+
+            if(!oServiceCondition) 
+                throw new Error(this.oI18n.getText('errorPositionServiceNotMatch', [oInfoRow.ItmNumber]) || "");
+
+            const arrServices = await this.getServicesByPackageNumber(oServiceCondition.PckgNo);
+            this.oCreateOrderModel.setProperty('/oService', {
+                services: arrServices
+            });
+
+            this.oFragmentServices.bindElement(`mCreateOrder>/oService`);
+            this.oFragmentServices.open();
+        } catch(oError: unknown) {
+            if(oError instanceof Error ) {
+                MessageBox.error(oError.message);
+                return;
+            }
+            throw oError;
+        } finally {
+            BusyIndicator.hide();
+        }
+    }
+
+    public onCloseServicesFragment() {
+        this.oFragmentServices?.close();
+    }
+
+    public onAfterCloseServicesFragment() {
+        this.oFragmentServices?.destroy();
+        this.oFragmentServices = undefined;
+    }
+
+    public async getServicesConditions(): Promise<ServicesConditions[]> {
+        const sCurrentDocument: string = this.oCreateOrderModel.getProperty('/oSalesOrder/DocNumber');
+        const sEntityWithKeys = ERP.generateEntityWithKeys("/SalesOrderHeaderSet", {
+            DocNumber: sCurrentDocument
+        });
+        const sEntityWithChild = `${sEntityWithKeys}/ToServicesConditions`;
+        const { data } = await ERP.readDataKeysERP(sEntityWithChild, this.ZSD_SALES_GET_DOC_SRV);
+        const arrResults: ServicesConditions[] = data.results;
+        
+        const oMapConditions = new Map<string, ServicesConditions>();
+
+        for(const oCond of arrResults) {
+            const sKey = `${oCond.PckgNo}-${oCond.ItmNumber}`;
+            if(oMapConditions.has(sKey)) continue;
+
+            oMapConditions.set(sKey, oCond);
+        }
+
+        return [...oMapConditions.values()];
+    }
+
+    public async getServicesByPackageNumber(sPackageNumber: string): Promise<Service[]> {
+        const sCurrentDocument: string = this.oCreateOrderModel.getProperty('/oSalesOrder/DocNumber');
+        const sEntityWithKeys = ERP.generateEntityWithKeys("/SalesOrderHeaderSet", {
+            DocNumber: sCurrentDocument
+        });
+        const sEntityWithChild = `${sEntityWithKeys}/ToServices`;
+        const { data } = await ERP.readDataKeysERP(sEntityWithChild, this.ZSD_SALES_GET_DOC_SRV);
+        const arrResults = data.results as Service[];
+        return arrResults.filter(oResult => oResult.PckgNo === sPackageNumber);
+    }
+
+    public onCalculateItemsOrder() : void {
+        
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+
+        let arrSalesOrderItems : ItemOrder[] = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
+        for (const oItem of arrSalesOrderItems) {
+            oItem.editQuantity = false;
+            oItem.TargetValCalculate = parseFloat(oItem.NetValue) * parseFloat(oQueryData.iFactor)
         }
 
         this.oCreateOrderModel.refresh(true);

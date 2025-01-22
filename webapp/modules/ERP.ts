@@ -24,16 +24,16 @@ type MessageContainer = {
 
 export default class ERP {
     
-    static getDataERP(_sEntity : string, _oService: ODataModel, _aFilter: Filter[] | undefined,
-        oParam: ODataParameter = { 
-            bParam: false, 
-            oParameter: undefined 
-        }
+    static getDataERP(
+        _sEntity: string, 
+        _oService: ODataModel, 
+        _aFilter: Filter[] | undefined,
+        _oParam: Record<string, string> = {}
     ) : Promise<ODataResponse> {
         return new Promise <ODataResponse> ((resolve,reject)=>{
             _oService.read(_sEntity, {
                 filters: _aFilter,
-                urlParameters : oParam["bParam"] ? oParam["oParameter"] : {},
+                urlParameters: _oParam,
                 success: (data: any, response: any) => resolve({data,response}),
                 error: reject
             });
@@ -42,23 +42,22 @@ export default class ERP {
 
     static generateEntityWithKeys (_sEntity: string, _oKeysEntityEndPoint: ODataKeysEntityEndPoint): string {
         let sUrlEntityKeys = [...Object.entries(_oKeysEntityEndPoint)]
-                .map(([key, val]) => {
-                    if (typeof val === "number")
-                        return `${key}=${val}`;
-                    return `${key}='${val}'`;
-                }).join(",");
+            .map(([key, val]) => {
+                if (typeof val === "number")
+                    return `${key}=${val}`;
+                return `${key}='${val}'`;
+            }).join(",");
         return `${_sEntity}(${sUrlEntityKeys})`;
     };
 
-    static readDataKeysERP (_sEntity: string, _oService: ODataModel,
-        oParam: ODataParameter = { 
-            bParam: false, 
-            oParameter: undefined 
-        }
+    static readDataKeysERP (
+        _sEntity: string, 
+        _oService: ODataModel,
+        _oParam: Record<string, string> = {}
     ): Promise<ODataResponse> {
         return new Promise <ODataResponse> ((resolve, reject) => {
             _oService.read(_sEntity,{
-                urlParameters : oParam["bParam"] ? oParam["oParameter"] : {},
+                urlParameters: _oParam,
                 success: (data: any, response: any) => resolve({data,response}),
                 error: reject
             });

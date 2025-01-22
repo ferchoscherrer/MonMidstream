@@ -24,12 +24,20 @@
         },
         "oMessageStripErrorNoValidEstimationNumber": {
             "visible": false
+        },
+        "oAcctionTblItemPartition":{
+            "enabled": true
         }
 
     },
-    "iQuantityPartition": 3,
+    "iQuantityPartition": 1,
     "oSalesOrder": null,
     "oSelectEstimationNumber" : null,
+    "arrPartitionByItem": [],
+    "iNetValuePartititionByItem": 0,
+    "iCalculateModifiedValuePartititionByItem": 0,
+    "iCalculateAmountExceeded": 0,
+    "sUMBPartititionByItem": "",
     "testData":[
         {
             "cod": "1263",

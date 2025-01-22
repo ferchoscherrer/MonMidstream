@@ -18,13 +18,52 @@
                 <OverflowToolbar style="Clear">
                     <FlexBox width="100%" justifyContent="Start">
                         <GenericTag text="{i18n>originalAmountPosition}" status="Success" class="sapUiTinyMarginBeginEnd">
-                            <ObjectNumber number="699" unit="MXN" />
+                            <ObjectNumber 
+                                number="{
+                                    path:'mCreateOrder>/iNetValuePartititionByItem',
+                                    type:'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingSeparator: '.',
+                                        decimalSeparator: ','
+                                    }
+                                }"
+                                unit="{mCreateOrder>/sUMBPartititionByItem}" 
+                            />
                         </GenericTag>
                         <GenericTag text="{i18n>amountAssigned}" status="Information" class="sapUiTinyMarginBeginEnd">
-                            <ObjectNumber number="800" unit="MXN" />
+                            <ObjectNumber 
+                                number="{
+                                    path:'mCreateOrder>/iCalculateModifiedValuePartititionByItem',
+                                    type:'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingSeparator: '.',
+                                        decimalSeparator: ','
+                                    }
+                                }" 
+                                unit="{mCreateOrder>/sUMBPartititionByItem}" 
+                            />
                         </GenericTag>
                         <GenericTag text="{i18n>originalOverrunAmount}" status="Error" class="sapUiTinyMarginBeginEnd">
-                            <ObjectNumber number="101" unit="MXN" />
+                            <ObjectNumber 
+                                number="{
+                                    path:'mCreateOrder>/iCalculateAmountExceeded',
+                                    type:'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingSeparator: '.',
+                                        decimalSeparator: ','
+                                    }
+                                }" 
+                                unit="{mCreateOrder>/sUMBPartititionByItem}" 
+                            />
                         </GenericTag>
                     </FlexBox>
                 </OverflowToolbar>
@@ -32,7 +71,7 @@
             <content>
                 <table:Table 
                     class="sapUiSmallMarginTop" 
-                    rows="{temp>/partitions}"
+                    rows="{mCreateOrder>/arrPartitionByItem}"
                     alternateRowColors="true"
                     selectionMode="None" >
                     <table:rowMode>
@@ -42,31 +81,44 @@
                         <table:Column >
                             <Label text="{i18n>pos}" />
                             <table:template>
-                                <Text wrapping="false" text="{temp>pos}"/>
+                                <Text wrapping="false" text="{mCreateOrder>ItmNumber}"/>
                             </table:template>
                         </table:Column>
                         <table:Column >
                             <Label text="{i18n>material}" />
                             <table:template>
-                                <Text wrapping="false" text="{temp>material}"/>
+                                <Text wrapping="false" text="{mCreateOrder>Material}"/>
                             </table:template>
                         </table:Column>
                         <table:Column >
                             <Label text="{i18n>quantity}" />
                             <table:template>
-                                <Text wrapping="false" text="{temp>quantity}"/>
+                                <Text wrapping="false" text="{mCreateOrder>TargetQty}"/>
                             </table:template>
                         </table:Column>
                         <table:Column >
                             <Label text="{i18n>umb}" />
                             <table:template>
-                                <Text wrapping="false" text="{temp>unit}"/>
+                                <Text wrapping="false" text="{mCreateOrder>TargetQu}"/>
                             </table:template>
                         </table:Column>
                         <table:Column >
                             <Label text="{i18n>amount}" />
                             <table:template>
-                                <Input value="{temp>amount}"/>
+                                <Input
+                                    change=".onCalculateAmountAssignedPartitionByItem"
+                                    value="{
+                                        path:'mCreateOrder>NetValue',
+                                        type:'sap.ui.model.type.Float',
+                                        formatOptions: {
+                                            groupingEnabled: true,
+                                            groupingSeparator: ',',
+                                            decimalSeparator: '.',
+                                            minFractionDigits: 2,
+                                            maxFractionDigits: 2
+                                        }
+                                    }"
+                                />
                             </table:template>
                         </table:Column>
                     </table:columns>
@@ -82,7 +134,7 @@
             <footer>
                 <OverflowToolbar>
                     <ToolbarSpacer />
-                    <Button text="{i18n>divide}" type="Accept" icon="sap-icon://split" press=".onPositionPartitioning" />
+                    <Button text="{i18n>divide}" enabled="{mCreateOrder>/oConfig/oAcctionTblItemPartition/enabled}" type="Accept" icon="sap-icon://split" press=".onPositionPartitioning" />
                     <Button text="{i18n>cancel}" type="Reject" icon="sap-icon://reset" press=".onClosenPositionPartitioning"/>
                 </OverflowToolbar>
             </footer>
