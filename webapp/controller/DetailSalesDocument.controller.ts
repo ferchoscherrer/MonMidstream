@@ -154,7 +154,6 @@ export default class DetailSalesDocument extends Controller {
 
         this.oCreateOrderModel.refresh(true);
         this.onClosenPositionPartitioning();
-        this.onRemoveSelectionItem();
         this.onCalculateItemsOrder();
     }
 
@@ -167,6 +166,7 @@ export default class DetailSalesDocument extends Controller {
         this.oCreateOrderModel.setProperty("/sUMBPartititionByItem", '');
         this.oCreateOrderModel.setProperty("/iQuantityPartition", 1);
         this.oCreateOrderModel.refresh(true);
+        this.onRemoveSelectionItem();
         this.oFragmentPositionPartitioning?.close();
     }
 
@@ -353,24 +353,28 @@ export default class DetailSalesDocument extends Controller {
         const iNumberPartition =  parseFloat(this.oCreateOrderModel.getProperty("/iQuantityPartition")) + 1;
         const iNetValue = parseFloat(oSelectItem.NetValue); 
         const iNetValueByPartition = iNetValue / iNumberPartition;
-
         const arrOrderItems = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
         const iLengthOrderItems = arrOrderItems.length;
 
         let arrPartitionByItem : ItemOrder[] = [];
+        let iCalculateModifiedValuePartititionByItem = 0;
+        let iCalculateAmountExceeded = 0;
 
         for(let i = 0; i<iNumberPartition; i++){
             const oSelectItemByPartition = structuredClone(oSelectItem);
-            oSelectItemByPartition.NetValue = iNetValueByPartition.toFixed(2);
+            oSelectItemByPartition.NetValue = Math.round(iNetValueByPartition).toString();//iNetValueByPartition.toFixed(2);
             let iLengthArrPartitionByItem = arrPartitionByItem.length;
             let iCalculatePosition  = 0;
             if (i !== 0)  {
                 iCalculatePosition = (iLengthOrderItems + iLengthArrPartitionByItem) * 10;
                 oSelectItemByPartition.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
             }
+            iCalculateModifiedValuePartititionByItem += Math.round(iNetValueByPartition);
             arrPartitionByItem.push(oSelectItemByPartition);
         }
 
+        iCalculateAmountExceeded = iNetValue - iCalculateModifiedValuePartititionByItem;
+        arrPartitionByItem[0].NetValue = (parseFloat(arrPartitionByItem[0].NetValue) +  iCalculateAmountExceeded).toString();
         this.oCreateOrderModel.setProperty("/iNetValuePartititionByItem", iNetValue);
         this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", iNetValue);
         this.oCreateOrderModel.setProperty("/sUMBPartititionByItem", oSelectItem.TargetQu);

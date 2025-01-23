@@ -63,6 +63,19 @@ export default class ERP {
             });
         });
     };
+
+    static createDataERP(
+        _sEntity: string, 
+        _oService: ODataModel,
+        _oDataToSend: Object | Array<any>
+    ) : Promise<ODataResponse>{
+        return new Promise <ODataResponse> ((resolve, reject) => {
+            _oService.create(_sEntity,_oDataToSend,{
+                success: (data: any, response: any) => resolve({data,response}),
+                error: reject
+            });
+        });
+    };
 }
 
 
