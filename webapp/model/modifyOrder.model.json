@@ -30,12 +30,6 @@
         }
 
     },
-    "iQuantityPartition": 1,
     "oSalesOrder": null,
-    "oSelectEstimationNumber" : null,
-    "arrPartitionByItem": [],
-    "iNetValuePartititionByItem": 0,
-    "iCalculateModifiedValuePartititionByItem": 0,
-    "iCalculateAmountExceeded": 0,
-    "sUMBPartititionByItem": ""
+    "oSelectEstimationNumber" : null
 }

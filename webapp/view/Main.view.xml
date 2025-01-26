@@ -7,8 +7,8 @@
             <IconTabFilter key="createOrder" design="Horizontal" icon="sap-icon://create"  text="{i18n>createOrder}" textDirection="RTL">
                 <mvc:XMLView viewName="com.triiari.retrobilling.view.CreateOrder" height="100%"/>
             </IconTabFilter>
-            <IconTabFilter key="modifyOrder" design="Horizontal" icon="sap-icon://write-new-document" text="Modificar Pedido" textDirection="LTR" >
-                <!-- <mvc:XMLView/> -->
+            <IconTabFilter key="modifyOrder" design="Horizontal" icon="sap-icon://write-new-document" text="Modificar Pedido" textDirection="RTL" >
+                <mvc:XMLView viewName="com.triiari.retrobilling.view.QueryModifyOrder" height="100%"/>
             </IconTabFilter>
         </items>
     </IconTabBar>

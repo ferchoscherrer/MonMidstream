@@ -26,6 +26,10 @@
         "uri": "model/createOrder.model.json",
         "type": "JSON"
       },
+      "modifyOrder": {
+        "uri": "model/modifyOrder.model.json",
+        "type": "JSON"
+      },
       "ZGW_MAINSTREAM_CATALOGS_SRV": {
         "uri": "srvMonRetro/ZGW_MAINSTREAM_CATALOGS_SRV/",
         "type": "OData",
@@ -112,6 +116,10 @@
       },
       "mCreateOrder": {
         "dataSource": "createOrder",
+        "type": "sap.ui.model.json.JSONModel"
+      },
+      "mModifyOrder": {
+        "dataSource": "modifyOrder",
         "type": "sap.ui.model.json.JSONModel"
       },
       "ZGW_MAINSTREAM_CATALOGS_SRV": {

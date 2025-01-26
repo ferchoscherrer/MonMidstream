@@ -1,0 +1,77 @@
+<mvc:View controllerName="com.triiari.retrobilling.controller.QueryModifyOrder"
+    displayBlock="true"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <Page id="pgQueryModifyOrder" backgroundDesign="List" floatingFooter="true" showHeader="false" enableScrolling="true" >
+        <MessageStrip 
+            text="{i18n>errorEstimationNumberNotFound}" 
+            type="Error" 
+            showIcon="true"
+            customIcon="sap-icon://alert"
+            visible="{mModifyOrder>/oConfig/oMessageStripErrorNoValidEstimationNumber/visible}"
+            class="sapUiResponsiveMargin" />
+        <content>
+            <f:SimpleForm 
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="2"
+                labelSpanL="2"
+                labelSpanM="3"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="7"
+                emptySpanL="2"
+                emptySpanM="2"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1"
+                singleContainerFullSize="false" >
+                <f:content>
+                    <core:Title/>
+                    <Label text="{i18n>estimationNumber}" labelFor="iptEstimationNumber" required="true" />
+                    <Input id="iptEstimationNumber" showValueHelp="true" value="{mModifyOrder>/oQuery/estimationNumber}" valueHelpRequest="onOpenPopUpEstimationNumber" submit=".onEstimationNumber"/>
+                    <Label text="{i18n>request}" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mModifyOrder>/oQuery/selectRequest/CustomerCode}} {=${mModifyOrder>/oQuery/selectRequest/Name1}}" valueHelpRequest="onOpenPopUpRequest"/>
+                    <Label text="{i18n>salesOrganization}" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mModifyOrder>/oQuery/selectSalesOrganization/SalesOrgVta}} {=${mModifyOrder>/oQuery/selectSalesOrganization/SalesOrgName}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
+                    <!-- <Label text="{i18n>channel}" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{mModifyOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
+                    <Label text="{i18n>factor}" labelFor="iptFactor" required="true" />
+                    <Input 
+                        id="iptFactor"
+                        value="{
+                            path: 'mModifyOrder>/oQuery/iFactor',
+                            type:'sap.ui.model.type.Float',
+                            formatOptions: {
+                                groupingSeparator: '.',
+                                decimalSeparator: ','
+                            }
+                        }" 
+                        change="onChangeFormatterNumber"
+                     />
+                    <Label text="{i18n>currency}" />
+                    <Input showValueHelp="true" valueHelpOnly="true" value="{=${mModifyOrder>/oQuery/selectCurrency/CurrencyCode}} {=${mModifyOrder>/oQuery/selectCurrency/CurrencyName}}" valueHelpRequest="onOpenPopUpCurrency" />
+                    <core:Title/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <footer>
+			<Bar>
+				<contentRight>
+                    <Button 
+                        id="btnDescestimationNumber" 
+                        type="Accept" 
+                        text="{i18n>Consultar}" 
+                        enabled="{mModifyOrder>/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate}" 
+                        press="onOpenDetailSalesDocument"
+                        icon="sap-icon://create" />
+                    <Button type="Reject" text="{i18n>clear}" icon="sap-icon://clear-filter" press="onClearFilter" />
+				</contentRight>
+			</Bar>
+		</footer>
+    </Page>
+</mvc:View>
