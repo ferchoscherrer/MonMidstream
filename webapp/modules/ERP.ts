@@ -53,10 +53,12 @@ export default class ERP {
     static readDataKeysERP (
         _sEntity: string, 
         _oService: ODataModel,
-        _oParam: Record<string, string> = {}
+        _aFilter?: Filter[],
+        _oParam: Record<string, any> = {}
     ): Promise<ODataResponse> {
         return new Promise <ODataResponse> ((resolve, reject) => {
-            _oService.read(_sEntity,{
+            _oService.read(_sEntity, {
+                filters: _aFilter,
                 urlParameters: _oParam,
                 success: (data: any, response: any) => resolve({data,response}),
                 error: reject

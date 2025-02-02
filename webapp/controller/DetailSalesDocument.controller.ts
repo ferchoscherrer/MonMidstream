@@ -23,6 +23,8 @@ import Button from "sap/m/Button";
 import StepInput from "sap/m/StepInput";
 import { RowActionItem$PressEvent } from "sap/ui/table/RowActionItem";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 // import { ERP } from "../modules/ERP";
 
 interface DetailRouteArg {
@@ -32,6 +34,38 @@ interface DetailRouteArg {
     }
 }
 
+interface SalesHeaderIn {
+    SalesOrg: string,
+    DistrChan: string,
+    Division: string,
+    DocType: string,
+    Currency: string,
+    PurchNoC: string //no esta
+    PurchDate: string | Date | null,
+    Ref1: string //no esta
+    Name: string,
+    CtValidF: string | Date | null ,//no esta
+    CtValidT: string | Date | null,//no esta
+    PoDatS: string | Date | null,//no esta
+    SdDocCat: string,
+    CompCdeB: string,
+    CurrIso: string
+}
+
+interface SalesItem {
+    ItmNumber: string,
+    Material: string,
+    Plant: string,
+    TargetQty: string,
+    TargetQu: string //no esta
+    TargetVal: string //no esta
+    ItemCateg: string //no esta
+    MatlGroup: string //no esta
+    PurchDate: string | Date | null ,
+    Ref1: string //no esta
+    PoDatS: string | Date | null , //no esta
+    SalesConditionsInSet: never[] // Que datos deben ir aca ?
+}
 /**
  * @namespace com.triiari.retrobilling.controller
  */
@@ -45,11 +79,13 @@ export default class DetailSalesDocument extends Controller {
     private oCreateOrderModel: JSONModel;
     private oRouter : Router;
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
+    private ZSD_SALES_CREATE_DOC_SRV_01: ODataModel;
     private oDialogConfirmPosition : Dialog; 
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
+        this.ZSD_SALES_CREATE_DOC_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
@@ -104,7 +140,7 @@ export default class DetailSalesDocument extends Controller {
                 DocNumber: sSalesOrder
             });
            
-            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, { 
+            const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, undefined, { 
                 $expand: 'ToItems,ToConditions,ToPartners,ToServices' 
             });
 
@@ -476,9 +512,15 @@ export default class DetailSalesDocument extends Controller {
             DocNumber: sCurrentDocument
         });
         const sEntityWithChild = `${sEntityWithKeys}/ToServices`;
-        const { data } = await ERP.readDataKeysERP(sEntityWithChild, this.ZSD_SALES_GET_DOC_SRV);
+        const { data } = await ERP.readDataKeysERP(
+            sEntityWithChild, 
+            this.ZSD_SALES_GET_DOC_SRV, 
+            [new Filter("PckgNo", FilterOperator.EQ, sPackageNumber)]
+        );
+
         const arrResults = data.results as Service[];
-        return arrResults.filter(oResult => oResult.PckgNo === sPackageNumber);
+        return arrResults;
+        // return arrResults.filter(oResult => oResult.PckgNo === sPackageNumber);
     }
 
     public onCalculateItemsOrder() : void {
@@ -492,5 +534,81 @@ export default class DetailSalesDocument extends Controller {
         }
 
         this.oCreateOrderModel.refresh(true);
+    }
+
+    public async onCreateOrder() : Promise<void> {
+        try {
+            BusyIndicator.show(0);
+            const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+            const arrItems = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+            let oJsonCreate = {
+                SalesHeaderIn: this.getSalesHeader(),
+                SalesItemsInSet: this.getSalesItemsInSet(),
+                SalesPartnersSet: {},
+                ReturnSet: []
+            };
+
+            // create call ERP
+            MessageBox.information(this.oI18n.getText("infoDunctionBuild") || '');
+
+            // const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', 
+            // this.ZSD_SALES_CREATE_DOC_SRV_01, { 
+            //     oJsonCreate
+            // });
+
+
+        } catch (oError : any) {
+            const sErrorMessageDefault = this.oI18n.getText("errorCreateSalesOrder");
+            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
+    }
+
+    public getSalesHeader () : SalesHeaderIn {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+        const oSalesHeader : SalesHeaderIn = {
+            SalesOrg: oSalesOrder.SalesOrg,
+            DistrChan: oSalesOrder.DistrChan,
+            Division: oSalesOrder.Division,
+            DocType: oSalesOrder.DocType,
+            Currency: oSalesOrder.Currency,
+            PurchNoC: "sefsf", //no esta
+            PurchDate: oSalesOrder.PurchDate,
+            Ref1: "sefsf", //no esta
+            Name: oSalesOrder.DocNumber,
+            CtValidF: oSalesOrder.CtValidF,//no esta
+            CtValidT: oSalesOrder.CtValidT,//no esta
+            PoDatS: "\/Date(1738021010567)\/",//no esta
+            SdDocCat: oSalesOrder.SdDocCat,
+            CompCdeB: oSalesOrder.CompCode,
+            CurrIso: oSalesOrder.CurrenIso
+        };
+        
+        return oSalesHeader;
+    }
+
+    public getSalesItemsInSet () : SalesItem[] {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+        const arrItems = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+        let arrSalesItems = [];
+        for (const oItems of arrItems) {
+            const oSalesItem : SalesItem = {
+                ItmNumber: oItems.ItmNumber,
+                Material: oItems.oItems,
+                Plant: oItems.Plant,
+                TargetQty: oItems.TargetQty,
+                TargetQu: "BLS", //no esta
+                TargetVal: "23", //no esta
+                ItemCateg: "MID", //no esta
+                MatlGroup: "01", //no esta
+                PurchDate: oSalesOrder.PurchDate,
+                Ref1: "sefsf", //no esta
+                PoDatS: "\/Date(1738021010567)\/", //no esta
+                SalesConditionsInSet: [] // Que datos deben ir aca ?
+            }
+            arrSalesItems.push(oSalesItem);
+        }
+        return arrSalesItems;
     }
 }

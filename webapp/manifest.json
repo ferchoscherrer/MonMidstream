@@ -56,6 +56,15 @@
           "localUri": "localService/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+      "ZSD_SALES_CREATE_DOC_SRV_01": {
+        "uri": "srvMonRetro/ZSD_SALES_CREATE_DOC_SRV_01/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "2.0"
+        }
       }
     },
     "crossNavigation": {
@@ -138,6 +147,13 @@
       },
       "ZSD_SALES_GET_DOC_SRV": {
         "dataSource": "ZSD_SALES_GET_DOC_SRV",
+        "preload": true,
+        "settings": {
+          "useBatch": true
+        }
+      },
+      "ZSD_SALES_CREATE_DOC_SRV_01": {
+        "dataSource": "ZSD_SALES_CREATE_DOC_SRV_01",
         "preload": true,
         "settings": {
           "useBatch": true
