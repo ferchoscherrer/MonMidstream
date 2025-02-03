@@ -17,7 +17,7 @@
             title="{i18n>services}"
             class="sapUiResponsivePadding--content">
             <content>
-                <t:Table 
+                <t:TreeTable 
                     alternateRowColors="true"
                     busyIndicatorDelay="0"
                     enableColumnFreeze="true"
@@ -25,29 +25,18 @@
                     enableColumnReordering="false"
                     showNoData="true"
                     selectionMode="None"
-                    rows="{mCreateOrder>services}">
+                    toggleOpenState=".onToggleOpenStateServices"
+                    rows="{
+                        path: 'mCreateOrder>services',
+                        parameters: {
+                            arrayNames: ['children']
+                        }
+                    }">
                     <t:rowMode>
                         <rowmodes:Auto  />
                     </t:rowMode>
-                    <t:extension>
-                        <OverflowToolbar style="Clear">
-                            <Title text="{i18n>items} ({= ${mCreateOrder>services}.length })" />
-                            <ToolbarSpacer/>
-                            <!-- <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/>
-                            <Button text="{i18n>edit}" press=".editSelectedPositions" type="Emphasized" icon="sap-icon://edit"
-                                enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}"
-                            />
-                            <Button text="{i18n>delete}" press=".onConfirmRemovePosition" type="Emphasized" icon="sap-icon://decline"
-                                enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
-                            />
-                            <ToolbarSeparator />
-                            <Button press=".onOpenPositionPartitioning" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
-                                type="Default" icon="sap-icon://copy" tooltip="{i18n>copy}"
-                            /> -->
-                        </OverflowToolbar>
-                    </t:extension>
                     <t:columns >
-                        <t:Column width="6rem" hAlign="Center" >
+                        <t:Column width="13rem" hAlign="Center" >
                             <Text text="{i18n>pos}" />
                             <t:template >
                                 <Text text="{path: 'mCreateOrder>ExtLine'}"/>
@@ -59,19 +48,19 @@
                                 <Text text="{path: 'mCreateOrder>Service'}"/>
                             </t:template>
                         </t:Column>
-                        <t:Column >
+                        <t:Column width="13rem" >
                             <Text text="{i18n>description}"/>
                             <t:template >
-                                <Text text="{path: 'mCreateOrder>ShortText'}"/>
+                                <Text text="{path: 'mCreateOrder>ShortText'}" wrapping="false"/>
                             </t:template>
                         </t:Column>
-                        <t:Column >
+                        <t:Column hAlign="End">
                             <Text text="{i18n>quantity}"/>
                             <t:template >
-                                <Text text="{path: 'mCreateOrder>Quantity'}"/>
+                                <Text text="{mCreateOrder>Quantity}" visible="{= !!${mCreateOrder>Service}}"/>
                             </t:template>
                         </t:Column>
-                        <t:Column >
+                        <t:Column width="5rem" >
                             <Text text="{i18n>um}"/>
                             <t:template >
                                 <Text text="{path: 'mCreateOrder>BaseUom'}"/>
@@ -90,7 +79,7 @@
                                         minFractionDigits: 2,
                                         maxFractionDigits: 2
                                     }
-                                }"/>
+                                }" visible="{= !!${mCreateOrder>Service}}"/>
                             </t:template>
                         </t:Column>	
                         <t:Column >
@@ -107,7 +96,7 @@
                             title="{i18n>thereAreNotEntriesYetServices}"
                             description="{i18n>thereAreNotEntriesYetDescServices}"/>
                     </t:noData>
-                </t:Table>
+                </t:TreeTable>
             </content>
             <footer>
                 <OverflowToolbar>

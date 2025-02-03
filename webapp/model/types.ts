@@ -375,5 +375,6 @@ export interface Service {
   SiLine: string
   MiLineNo: string
   QtRel: string
-  LotSize: boolean
+  LotSize: boolean,
+  children?: Service[]
 }

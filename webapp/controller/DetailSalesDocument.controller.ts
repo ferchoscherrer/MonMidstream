@@ -25,6 +25,8 @@ import { RowActionItem$PressEvent } from "sap/ui/table/RowActionItem";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
+import { TreeTable$ToggleOpenStateEvent } from "sap/ui/table/TreeTable";
+import Context from "sap/ui/model/Context";
 // import { ERP } from "../modules/ERP";
 
 interface DetailRouteArg {
@@ -438,6 +440,31 @@ export default class DetailSalesDocument extends Controller {
 
     }
 
+    public convertServicesToHierarchy(arrServices: Service[]): Service[] {
+        const oMapLevelsServices: Record<string, Service> = {};
+        const arrRoots = [];
+        for(const oPos of arrServices) {
+            if(oPos.Service) continue;
+            oPos.children = [];
+            oMapLevelsServices[oPos.LineNo] = oPos;
+        }
+
+        for(const oPos of arrServices) {
+            if(oPos.ExtLine !== "0000000000" && oPos.OutlLevel !== 0) {
+                if(oPos.SubpckgNo !== "0000000000") {
+                    oPos.children?.push({
+                        SubpckgNo: oPos.SubpckgNo
+                    } as Service);
+                }
+                const oParent = oMapLevelsServices[oPos.ExtLine];
+                if(oParent) oParent.children?.push(oPos);
+            } else {
+                arrRoots.push(oPos);
+            }
+        }
+        return arrRoots;
+    }
+
     public async onOpenServicesFragment(oEvent: RowActionItem$PressEvent) {
         const oButton = oEvent.getSource();
         const oContext = oButton.getBindingContext("mCreateOrder");
@@ -451,16 +478,10 @@ export default class DetailSalesDocument extends Controller {
             }) as Dialog;
     
             this.getView()?.addDependent(this.oFragmentServices);
-    
-            const arrServicesConditions = await this.getServicesConditions();
-            const oServiceCondition = arrServicesConditions.find(oServiceCond => oServiceCond.ItmNumber === oInfoRow.ItmNumber);
 
-            if(!oServiceCondition) 
-                throw new Error(this.oI18n.getText('errorPositionServiceNotMatch', [oInfoRow.ItmNumber]) || "");
-
-            const arrServices = await this.getServicesByPackageNumber(oServiceCondition.PckgNo);
+            const arrServices = await this.getServicesByPackageNumber(oInfoRow.PckgNo);
             this.oCreateOrderModel.setProperty('/oService', {
-                services: arrServices
+                services: this.convertServicesToHierarchy(arrServices)
             });
 
             this.oFragmentServices.bindElement(`mCreateOrder>/oService`);
@@ -485,25 +506,28 @@ export default class DetailSalesDocument extends Controller {
         this.oFragmentServices = undefined;
     }
 
-    public async getServicesConditions(): Promise<ServicesConditions[]> {
-        const sCurrentDocument: string = this.oCreateOrderModel.getProperty('/oSalesOrder/DocNumber');
-        const sEntityWithKeys = ERP.generateEntityWithKeys("/SalesOrderHeaderSet", {
-            DocNumber: sCurrentDocument
-        });
-        const sEntityWithChild = `${sEntityWithKeys}/ToServicesConditions`;
-        const { data } = await ERP.readDataKeysERP(sEntityWithChild, this.ZSD_SALES_GET_DOC_SRV);
-        const arrResults: ServicesConditions[] = data.results;
-        
-        const oMapConditions = new Map<string, ServicesConditions>();
+    public async onToggleOpenStateServices(oEvent: TreeTable$ToggleOpenStateEvent): Promise<void> {
+        const oTable = oEvent.getSource();
+        try {
+            oTable.setBusy(true);
+            const oContext = oEvent.getParameter("rowContext") as Context;
+            const bExpanded = oEvent.getParameter("expanded");
+            const oInfo = oContext.getObject() as Service;
 
-        for(const oCond of arrResults) {
-            const sKey = `${oCond.PckgNo}-${oCond.ItmNumber}`;
-            if(oMapConditions.has(sKey)) continue;
+            if(oInfo.SubpckgNo === "0000000000" || !bExpanded) return;
 
-            oMapConditions.set(sKey, oCond);
+            const oModel = oContext.getModel() as JSONModel;
+            const arrServices = await this.getServicesByPackageNumber(oInfo.SubpckgNo);
+            oModel.setProperty(`${oContext.getPath()}/children`, arrServices);
+        } catch(oError: unknown){
+            if(oError instanceof Error) {
+                MessageBox.error(oError.message);
+                return;
+            }
+            throw oError;
+        } finally {
+            oTable.setBusy(false);
         }
-
-        return [...oMapConditions.values()];
     }
 
     public async getServicesByPackageNumber(sPackageNumber: string): Promise<Service[]> {
@@ -520,7 +544,6 @@ export default class DetailSalesDocument extends Controller {
 
         const arrResults = data.results as Service[];
         return arrResults;
-        // return arrResults.filter(oResult => oResult.PckgNo === sPackageNumber);
     }
 
     public onCalculateItemsOrder() : void {
