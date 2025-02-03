@@ -378,3 +378,55 @@ export interface Service {
   LotSize: boolean,
   children?: Service[]
 }
+
+export interface Conditions {
+  ItmNumber: string
+  CondStNo: string
+  CondCount: string
+  CondType: string
+  CondValue: string
+  Currency: string
+  CondUnit: string
+  CondPUnt: string
+  Calctypcon: string
+  Conexchrat: string
+  Numconvert: string
+  Denominato: string
+  Accountkey: string
+}
+
+export interface Partners {
+  PartnRole: string 
+  PartnNumb: string
+  ItmNumber: string
+  Name: string 
+  Name2: string 
+  Street: string 
+  Country: string 
+  CountrIso: string 
+  PostlCode: string 
+  City: string 
+  Region: string 
+  Telephone: string 
+  Address: string 
+}
+
+export interface MessageERP {
+  Type: string
+  Id: string
+  Number: string
+  Message: string
+  LogNo: string
+  LogMsgNo: string
+  MessageV1: string
+  MessageV2: string
+  MessageV3: string
+  MessageV4: string
+  Parameter: string
+  Row: number
+  Field: string
+  System: string
+  typeMessage: string
+  descMessage : string
+}
+

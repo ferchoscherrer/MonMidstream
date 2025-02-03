@@ -15,19 +15,20 @@ import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder, Service, ServicesConditions } from "../model/types";
+import { ItemOrder, Service, ServicesConditions, Conditions, Partners, MessageERP } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
-import Float from "sap/ui/model/type/Float";
 import Button from "sap/m/Button";
 import StepInput from "sap/m/StepInput";
 import { RowActionItem$PressEvent } from "sap/ui/table/RowActionItem";
-import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { TreeTable$ToggleOpenStateEvent } from "sap/ui/table/TreeTable";
 import Context from "sap/ui/model/Context";
-// import { ERP } from "../modules/ERP";
+import MessageView from "sap/m/MessageView";
+import MessageItem from "sap/m/MessageItem";
+import Bar from "sap/m/Bar";
+import Title from "sap/m/Title";
 
 interface DetailRouteArg {
     estimationNumber: string,
@@ -66,7 +67,7 @@ interface SalesItem {
     PurchDate: string | Date | null ,
     Ref1: string //no esta
     PoDatS: string | Date | null , //no esta
-    SalesConditionsInSet: never[] // Que datos deben ir aca ?
+    SalesConditionsInSet:  Conditions[]
 }
 /**
  * @namespace com.triiari.retrobilling.controller
@@ -83,11 +84,13 @@ export default class DetailSalesDocument extends Controller {
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
     private ZSD_SALES_CREATE_DOC_SRV_01: ODataModel;
     private oDialogConfirmPosition : Dialog; 
+    private oMessageViewERP : MessageView;
+    private oDialogMessageERP : Dialog;
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
-        this.ZSD_SALES_CREATE_DOC_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
+        this.ZSD_SALES_CREATE_DOC_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_CREATE_DOC_SRV_01") as ODataModel;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
@@ -562,24 +565,23 @@ export default class DetailSalesDocument extends Controller {
     public async onCreateOrder() : Promise<void> {
         try {
             BusyIndicator.show(0);
-            const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
-            const arrItems = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
             let oJsonCreate = {
                 SalesHeaderIn: this.getSalesHeader(),
                 SalesItemsInSet: this.getSalesItemsInSet(),
-                SalesPartnersSet: {},
+                SalesPartnersSet: this.getSalesPartner(),
                 ReturnSet: []
             };
 
-            // create call ERP
-            MessageBox.information(this.oI18n.getText("infoDunctionBuild") || '');
+            const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CREATE_DOC_SRV_01,  oJsonCreate);
 
-            // const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', 
-            // this.ZSD_SALES_CREATE_DOC_SRV_01, { 
-            //     oJsonCreate
-            // });
-
-
+            if (!oResponse.Salesdocument){
+                this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
+            }else{
+                MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResponse.Salesdocument]) || '');
+                this.oRouter.navTo("RouteMain");
+                EventBus.getInstance().publish("CreateOrder", "clear");
+            }
+            
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorCreateSalesOrder");
             MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
@@ -596,13 +598,13 @@ export default class DetailSalesDocument extends Controller {
             Division: oSalesOrder.Division,
             DocType: oSalesOrder.DocType,
             Currency: oSalesOrder.Currency,
-            PurchNoC: "sefsf", //no esta
+            PurchNoC: '',//"sefsf", //no esta
             PurchDate: oSalesOrder.PurchDate,
-            Ref1: "sefsf", //no esta
+            Ref1: oSalesOrder.Ref1, //no esta
             Name: oSalesOrder.DocNumber,
             CtValidF: oSalesOrder.CtValidF,//no esta
             CtValidT: oSalesOrder.CtValidT,//no esta
-            PoDatS: "\/Date(1738021010567)\/",//no esta
+            PoDatS: null,//"\/Date(1738021010567)\/",//no esta
             SdDocCat: oSalesOrder.SdDocCat,
             CompCdeB: oSalesOrder.CompCode,
             CurrIso: oSalesOrder.CurrenIso
@@ -614,6 +616,7 @@ export default class DetailSalesDocument extends Controller {
     public getSalesItemsInSet () : SalesItem[] {
         const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrItems = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+        
         let arrSalesItems = [];
         for (const oItems of arrItems) {
             const oSalesItem : SalesItem = {
@@ -621,17 +624,156 @@ export default class DetailSalesDocument extends Controller {
                 Material: oItems.oItems,
                 Plant: oItems.Plant,
                 TargetQty: oItems.TargetQty,
-                TargetQu: "BLS", //no esta
-                TargetVal: "23", //no esta
-                ItemCateg: "MID", //no esta
-                MatlGroup: "01", //no esta
+                TargetQu: oItems.TargetQu,
+                TargetVal: oItems.TargetValCalculate.toString(),
+                ItemCateg: oItems.ItemCateg,
+                MatlGroup: oItems.MatlGroup,
                 PurchDate: oSalesOrder.PurchDate,
-                Ref1: "sefsf", //no esta
-                PoDatS: "\/Date(1738021010567)\/", //no esta
-                SalesConditionsInSet: [] // Que datos deben ir aca ?
+                Ref1: oSalesOrder.Ref1,
+                PoDatS: null,//"\/Date(1738021010567)\/", //no esta
+                SalesConditionsInSet: this.getConditionByItems(oItems.ItmNumber,oItems.CondUnit)
             }
             arrSalesItems.push(oSalesItem);
         }
         return arrSalesItems;
+    }
+
+    public getConditionByItems( itmNumberKeyByItem : string, condUnit: string) : Conditions[]{
+
+        const arrSalesConditions = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToConditions/results`);
+        let arrFilterConditionByItems = arrSalesConditions.filter( (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem);
+        let conditionByItems : Conditions[] = [];
+
+        for (const oSalesConditions of arrFilterConditionByItems) {
+            conditionByItems.push({
+                ItmNumber: oSalesConditions.ItmNumber,
+                CondStNo: oSalesConditions.CondStNo,
+                CondCount: oSalesConditions.CondCount,
+                CondType: oSalesConditions.CondType,
+                CondValue: oSalesConditions.CondValue,
+                Currency: oSalesConditions.Currency,
+                CondUnit: condUnit,
+                CondPUnt: oSalesConditions.CondPUnt,
+                Calctypcon: oSalesConditions.Calctypcon,
+                Conexchrat: oSalesConditions.Conexchrat,
+                Numconvert: oSalesConditions.Numconvert,
+                Denominato: oSalesConditions.Denominato,
+                Accountkey: oSalesConditions.Accountkey
+            });
+        }
+
+        return conditionByItems;
+    }
+
+    public getSalesPartner() : Partners[] {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+        const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`);
+        let arrPartner = [];
+
+        for (const oPartner of arrSalesPartner) {
+            arrPartner.push({
+                PartnRole: oPartner.PartnRole,
+                PartnNumb: oPartner.SdDoc,
+                ItmNumber: "",
+                Name: "",
+                Name2: "",
+                Street:  "",
+                Country: oPartner.Country,
+                CountrIso: oPartner.Countryiso,
+                PostlCode: "",
+                City: "",
+                Region: "",
+                Telephone: "",
+                Address:  oPartner.Address
+            });
+        }
+
+        return arrPartner;
+    }
+
+    public getTypeErrorMessageERP(aMessageERP : MessageERP[]) : MessageERP[] {
+        for (const oMessage of aMessageERP) {
+            let  typeMessage : string;
+            let  descMessage : string;
+            switch (oMessage.Type) {
+                case 'E':                    
+                    typeMessage = this.oI18n.getText("error") || '';
+                    descMessage = 'Error';
+                    break;
+                case 'S':                    
+                    typeMessage = this.oI18n.getText("success") || '';
+                    descMessage = 'Success';
+                    break;
+            
+                default:
+                    typeMessage = this.oI18n.getText("warning") || '';
+                    descMessage = 'Warning';
+                    break;
+            }
+            oMessage.typeMessage = typeMessage;
+            oMessage.descMessage = descMessage;
+        }
+        return aMessageERP;
+    }  
+
+    public onShowMessageERP(aMessageERP : MessageERP[]) : void {
+
+        const oMessageERP = new JSONModel();
+
+        if(!this.oMessageViewERP){
+
+            const oBntBackDialog = new Button({
+                icon: "sap-icon://nav-back",
+                visible: false,
+                press: () =>{
+                    this.oMessageViewERP.navigateBack();
+                    oBntBackDialog.setVisible(false);
+                }
+            });
+
+            oMessageERP.setData(aMessageERP);
+
+            this.oMessageViewERP = new MessageView({
+                showDetailsPageHeader:false,
+                itemSelect: ()=>{
+                    oBntBackDialog.setVisible(true);
+                },
+                items:{
+                    path: '/',
+                    template: new MessageItem({
+                        type: '{descMessage}',
+                        title: '{typeMessage}',
+                        description: '{Message}',
+                        subtitle: '{Message}'
+                    })
+                }
+            });
+            this.oMessageViewERP.setModel(oMessageERP);
+
+            this.oDialogMessageERP = new Dialog({
+                resizable: true,
+                draggable: true,
+                content:this.oMessageViewERP,
+                state: "Information",
+                icon: "sap-icon://information",
+                beginButton: new Button({
+                    press:  () =>{
+                        this.oDialogMessageERP.close();
+                    },
+                    text: this.oI18n.getText("close")
+                }),
+                customHeader: new Bar({
+                    contentLeft: [oBntBackDialog],
+                    contentMiddle: [
+                        new Title({text:this.oI18n.getText("messageERP")})
+                    ]
+                }),
+                contentWidth: "10%",
+                contentHeight: "20%",
+                verticalScrolling: false
+            })
+        }
+        this.oMessageViewERP.navigateBack();
+        this.oDialogMessageERP.open();
     }
 }
