@@ -15,7 +15,7 @@ import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder, Service, ServicesConditions, Conditions, Partners, MessageERP } from "../model/types";
+import { ItemOrder, Service, ServicesConditions, Conditions, Partners, MessageERP, ItemOrderDivide } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
 import Button from "sap/m/Button";
@@ -402,11 +402,12 @@ export default class DetailSalesDocument extends Controller {
         let iCalculateAmountExceeded = 0;
 
         for(let i = 0; i<iNumberPartition; i++){
-            const oSelectItemByPartition = structuredClone(oSelectItem);
+            const oSelectItemByPartition : ItemOrderDivide = structuredClone(oSelectItem);
             oSelectItemByPartition.NetValue = Math.round(iNetValueByPartition).toString();//iNetValueByPartition.toFixed(2);
             let iLengthArrPartitionByItem = arrPartitionByItem.length;
             let iCalculatePosition  = 0;
             if (i !== 0)  {
+                oSelectItemByPartition.ItmNumberFather = oSelectItemByPartition.ItmNumber;
                 iCalculatePosition = (iLengthOrderItems + iLengthArrPartitionByItem) * 10;
                 oSelectItemByPartition.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
             }
@@ -631,22 +632,23 @@ export default class DetailSalesDocument extends Controller {
                 PurchDate: oSalesOrder.PurchDate,
                 Ref1: oSalesOrder.Ref1,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
-                SalesConditionsInSet: this.getConditionByItems(oItems.ItmNumber,oItems.CondUnit)
+                SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather , oItems.ItmNumber, oItems.CondUnit)
             }
             arrSalesItems.push(oSalesItem);
         }
         return arrSalesItems;
     }
 
-    public getConditionByItems( itmNumberKeyByItem : string, condUnit: string) : Conditions[]{
-
+    public getConditionByItems( itmNumberKeyFatherByItem : string,itmNumberKeyChildByItem : string, condUnit: string) : Conditions[]{
+        
+        const itmNumberKeyByItem : string = itmNumberKeyFatherByItem || itmNumberKeyChildByItem;
         const arrSalesConditions = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToConditions/results`);
         let arrFilterConditionByItems = arrSalesConditions.filter( (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem);
         let conditionByItems : Conditions[] = [];
 
         for (const oSalesConditions of arrFilterConditionByItems) {
             conditionByItems.push({
-                ItmNumber: oSalesConditions.ItmNumber,
+                ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
                 CondStNo: oSalesConditions.CondStNo,
                 CondCount: oSalesConditions.CondCount,
                 CondType: oSalesConditions.CondType,
@@ -673,7 +675,7 @@ export default class DetailSalesDocument extends Controller {
         for (const oPartner of arrSalesPartner) {
             arrPartner.push({
                 PartnRole: oPartner.PartnRole,
-                PartnNumb: oPartner.SdDoc,
+                PartnNumb: oPartner.Customer,
                 ItmNumber: "",
                 Name: "",
                 Name2: "",
