@@ -352,6 +352,7 @@ export default class CreateOrder extends Controller {
 
         this.oCreateOrderModel.setProperty(`/oConfig/bToRequiredQuery`, true);
         this.oCreateOrderModel.setProperty(`/oQuery/iFactor`, 0);
+        this.oCreateOrderModel.setProperty('/bModify', false);
         this.oCreateOrderModel.refresh(true);
     }
 

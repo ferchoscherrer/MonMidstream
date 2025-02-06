@@ -37,5 +37,6 @@
     "iNetValuePartititionByItem": 0,
     "iCalculateModifiedValuePartititionByItem": 0,
     "iCalculateAmountExceeded": 0,
-    "sUMBPartititionByItem": ""
+    "sUMBPartititionByItem": "",
+    "bModify": false
 }

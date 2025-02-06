@@ -35,6 +35,7 @@ interface DetailRouteArg {
     "?query": {
         factor: string
     }
+    "?modify": boolean 
 }
 
 interface SalesHeaderIn {
@@ -91,18 +92,22 @@ export default class DetailSalesDocument extends Controller {
     private oRouter : Router;
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
     private ZSD_SALES_CREATE_DOC_SRV_01: ODataModel;
+    private ZSD_SALES_CHANGE_DOC_SRV: ODataModel;
     private oDialogConfirmPosition : Dialog; 
     private oMessageViewERP : MessageView;
     private oDialogMessageERP : Dialog;
+    private oModifyOrderModel: JSONModel;
 
     /*eslint-disable @typescript-eslint/no-empty-function*/
     public onInit(): void {
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
         this.ZSD_SALES_CREATE_DOC_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_CREATE_DOC_SRV_01") as ODataModel;
+        this.ZSD_SALES_CHANGE_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_CHANGE_DOC_SRV") as ODataModel;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oCreateOrderModel = this.getOwnerComponent()?.getModel("mCreateOrder") as JSONModel;
+        this.oModifyOrderModel = this.getOwnerComponent()?.getModel("mModifyOrder") as JSONModel;
         this.oInfoTemp = new JSONModel({
             partitions: [
                 {
@@ -129,17 +134,34 @@ export default class DetailSalesDocument extends Controller {
             ]
         });
         this.getView()?.setModel(this.oInfoTemp, "temp");
+        debugger
         this.oRouter.getRoute("RouteDetailSalesOrder")?.attachMatched(this.onRouteMatched, this);
+        this.oRouter.getRoute("RouteDetailEditSalesOrder")?.attachMatched(this.onRouteMatchedModify, this);
     }
 
-    public onRouteMatched(oEvent: Route$MatchedEvent): void {
-        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+    public onRouteMatchedGeneric(oArguments : DetailRouteArg): void {
+        // const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
         const oQueryParams = oArguments["?query"];
 
         //Se asigna el valor al modelo para el escenario en que se entre directo en la ruta
         this.oCreateOrderModel.setProperty('/oQuery/iFactor', oQueryParams.factor);
 
         this.onQuerySalesOrder(oArguments?.estimationNumber);
+        
+    }
+
+    public onRouteMatched(oEvent: Route$MatchedEvent): void {
+        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+        
+        this.onRouteMatchedGeneric(oArguments);
+        
+    }
+
+    public onRouteMatchedModify(oEvent: Route$MatchedEvent): void {
+        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+        
+        this.oCreateOrderModel.setProperty('/bModify', true);
+        this.onRouteMatchedGeneric(oArguments);
         
     }
 
@@ -289,6 +311,7 @@ export default class DetailSalesDocument extends Controller {
     public onClose() {
         this.oRouter.navTo("RouteMain");
         EventBus.getInstance().publish("CreateOrder", "clear");
+        EventBus.getInstance().publish("QueryModifyOrder", "clear");
     }
 
     public onConfirmCopyPosition(): void {
@@ -587,8 +610,7 @@ export default class DetailSalesDocument extends Controller {
                 this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
             }else{
                 MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResponse.Salesdocument]) || '');
-                this.oRouter.navTo("RouteMain");
-                EventBus.getInstance().publish("CreateOrder", "clear");
+                this.onClose();
             }
             
         } catch (oError : any) {
@@ -698,7 +720,6 @@ export default class DetailSalesDocument extends Controller {
     }
 
     public getSalesPartner() : Partners[] {
-        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`);
         let arrPartner = [];
 
@@ -745,15 +766,13 @@ export default class DetailSalesDocument extends Controller {
             oMessage.typeMessage = typeMessage;
             oMessage.descMessage = descMessage;
         }
+        debugger
         return aMessageERP;
     }  
 
     public onShowMessageERP(aMessageERP : MessageERP[]) : void {
 
-        const oMessageERP = new JSONModel();
-
         if(!this.oMessageViewERP){
-
             const oBntBackDialog = new Button({
                 icon: "sap-icon://nav-back",
                 visible: false,
@@ -763,13 +782,9 @@ export default class DetailSalesDocument extends Controller {
                 }
             });
 
-            oMessageERP.setData(aMessageERP);
-
             this.oMessageViewERP = new MessageView({
                 showDetailsPageHeader:false,
-                itemSelect: ()=>{
-                    oBntBackDialog.setVisible(true);
-                },
+                itemSelect: () => oBntBackDialog.setVisible(true),
                 items:{
                     path: '/',
                     template: new MessageItem({
@@ -780,7 +795,6 @@ export default class DetailSalesDocument extends Controller {
                     })
                 }
             });
-            this.oMessageViewERP.setModel(oMessageERP);
 
             this.oDialogMessageERP = new Dialog({
                 resizable: true,
@@ -789,23 +803,52 @@ export default class DetailSalesDocument extends Controller {
                 state: "Information",
                 icon: "sap-icon://information",
                 beginButton: new Button({
-                    press:  () =>{
-                        this.oDialogMessageERP.close();
-                    },
+                    press:  () => this.oDialogMessageERP.close(),
                     text: this.oI18n.getText("close")
                 }),
                 customHeader: new Bar({
-                    contentLeft: [oBntBackDialog],
-                    contentMiddle: [
-                        new Title({text:this.oI18n.getText("messageERP")})
-                    ]
+                    contentLeft: [ oBntBackDialog ],
+                    contentMiddle: [ new Title({text:this.oI18n.getText("messageERP")}) ]
                 }),
-                contentWidth: "10%",
-                contentHeight: "20%",
+                contentWidth: "50%",
+                contentHeight: "40%",
                 verticalScrolling: false
-            })
+            });
+
+            this.oMessageViewERP.setModel(new JSONModel(aMessageERP));
         }
+
+        const oModel = this.oMessageViewERP.getModel() as JSONModel;
+        oModel.setData(aMessageERP);
+
         this.oMessageViewERP.navigateBack();
         this.oDialogMessageERP.open();
+    }
+
+    public async onModifyOrder() : Promise<void> {
+        try {
+            BusyIndicator.show(0);
+            let oJsonModify = {
+                SalesHeaderIn: this.getSalesHeader(),
+                SalesItemsInSet: this.getSalesItemsInSet(),
+                SalesPartnersSet: this.getSalesPartner(),
+                ReturnSet: []
+            };
+
+            const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CHANGE_DOC_SRV,  oJsonModify);
+
+            if (!oResponse.Salesdocument){
+                this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
+            }else{
+                MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResponse.Salesdocument]) || '');
+                this.onClose();
+            }
+            
+        } catch (oError : any) {
+            const sErrorMessageDefault = this.oI18n.getText("errorModifySalesOrder");
+            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
     }
 }

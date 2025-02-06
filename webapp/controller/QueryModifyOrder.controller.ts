@@ -42,6 +42,8 @@ export default class QueryModifyOrder extends Controller {
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
+
+        EventBus.getInstance().subscribe("QueryModifyOrder", "clear", this.onClearFilter.bind(this));
     }
 
     public async onEstimationNumber(oEvent: Input$SubmitEvent) {
@@ -261,13 +263,12 @@ export default class QueryModifyOrder extends Controller {
 
             this.onValidateData();
 
-            MessageBox.information(this.oI18n.getText("infoViewBuild") || '');
-            // this.oRouter.navTo("RouteDetailSalesOrder", {
-            //     estimationNumber: oQueryData.estimationNumber,
-            //     query: {
-            //         factor: oQueryData.iFactor
-            //     }
-            // });
+            this.oRouter.navTo("RouteDetailEditSalesOrder", {
+                estimationNumber: oQueryData.estimationNumber,
+                query: {
+                    factor: oQueryData.iFactor
+                },
+            });
         } catch (oError: any) {
             MessageBox.error(oError.message);
         }

@@ -217,7 +217,8 @@
             <OverflowToolbar >
                 <ToolbarSpacer />
                 <Button type="Reject" text="{i18n>cancel}" press=".onClose" icon="sap-icon://undo"  />
-                <Button type="Accept" text="{i18n>createOrder}" press=".onCreateOrder" icon="sap-icon://create-form"  />
+                <Button type="Accept" text="{i18n>createOrder}" visible="{=!${mCreateOrder>/bModify}}" press=".onCreateOrder" icon="sap-icon://create-form"  />
+                <Button type="Accept" text="{i18n>edit}" visible="{mCreateOrder>/bModify}" press=".onModifyOrder" icon="sap-icon://request" />
             </OverflowToolbar>
         </f:footer>
     </f:DynamicPage>
