@@ -46,7 +46,8 @@ interface SalesHeaderIn {
     PurchNoC: string //no esta
     PurchDate: string | Date | null,
     Ref1: string //no esta
-    Name: string,
+    RefDoc: string,
+    RefdocCat: string,
     CtValidF: string | Date | null ,//no esta
     CtValidT: string | Date | null,//no esta
     PoDatS: string | Date | null,//no esta
@@ -67,6 +68,13 @@ interface SalesItem {
     PurchDate: string | Date | null ,
     Ref1: string //no esta
     PoDatS: string | Date | null , //no esta
+    RefDoc: string,
+    RefDocIt : string,
+    RefDocCa : string,
+    ProfitCtr :string,
+    PckgNo : string,
+    WbsElem : string,
+    Route : string,
     SalesConditionsInSet:  Conditions[]
 }
 /**
@@ -597,12 +605,13 @@ export default class DetailSalesDocument extends Controller {
             SalesOrg: oSalesOrder.SalesOrg,
             DistrChan: oSalesOrder.DistrChan,
             Division: oSalesOrder.Division,
-            DocType: oSalesOrder.DocType,
+            DocType: 'ZL6',//oSalesOrder.DocType,
             Currency: oSalesOrder.Currency,
             PurchNoC: '',//"sefsf", //no esta
             PurchDate: oSalesOrder.PurchDate,
             Ref1: oSalesOrder.Ref1, //no esta
-            Name: oSalesOrder.DocNumber,
+            RefDoc: oSalesOrder.DocNumber,
+            RefdocCat: 'L',
             CtValidF: oSalesOrder.CtValidF,//no esta
             CtValidT: oSalesOrder.CtValidT,//no esta
             PoDatS: null,//"\/Date(1738021010567)\/",//no esta
@@ -622,15 +631,22 @@ export default class DetailSalesDocument extends Controller {
         for (const oItems of arrItems) {
             const oSalesItem : SalesItem = {
                 ItmNumber: oItems.ItmNumber,
-                Material: oItems.oItems,
+                Material: oItems.Material,
                 Plant: oItems.Plant,
                 TargetQty: oItems.TargetQty,
                 TargetQu: oItems.TargetQu,
                 TargetVal: oItems.TargetValCalculate.toString(),
-                ItemCateg: oItems.ItemCateg,
+                ItemCateg: '',//oItems.ItemCateg,
                 MatlGroup: oItems.MatlGroup,
                 PurchDate: oSalesOrder.PurchDate,
                 Ref1: oSalesOrder.Ref1,
+                RefDoc : oSalesOrder.DocNumber,
+                RefDocIt : oItems.ItmNumber,
+                RefDocCa : 'L',
+                ProfitCtr : oItems.ProfitCtr,
+                PckgNo : oItems.PckgNo,
+                WbsElem : oItems.WbsElem,
+                Route : oItems.Route,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
                 SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather , oItems.ItmNumber, oItems.CondUnit)
             }
@@ -643,15 +659,29 @@ export default class DetailSalesDocument extends Controller {
         
         const itmNumberKeyByItem : string = itmNumberKeyFatherByItem || itmNumberKeyChildByItem;
         const arrSalesConditions = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToConditions/results`);
-        let arrFilterConditionByItems = arrSalesConditions.filter( (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem);
+        let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
+            (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
+        );
         let conditionByItems : Conditions[] = [];
 
         for (const oSalesConditions of arrFilterConditionByItems) {
+            const sCondType = {
+                ZEK1: "ZK1P",
+                ZEK2: "ZK2P",
+                ZEK3: "ZK3P",
+                ZEK4: "ZK4P",
+                ZEK5: "ZK5P",
+                ZK06: "ZK06",
+                ZK09: "ZK09",
+            }[oSalesConditions.CondType] || '';
+
+            if(sCondType === "") continue;
+
             conditionByItems.push({
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
                 CondStNo: oSalesConditions.CondStNo,
                 CondCount: oSalesConditions.CondCount,
-                CondType: oSalesConditions.CondType,
+                CondType: sCondType,
                 CondValue: oSalesConditions.CondValue,
                 Currency: oSalesConditions.Currency,
                 CondUnit: condUnit,
@@ -660,10 +690,10 @@ export default class DetailSalesDocument extends Controller {
                 Conexchrat: oSalesConditions.Conexchrat,
                 Numconvert: oSalesConditions.Numconvert,
                 Denominato: oSalesConditions.Denominato,
-                Accountkey: oSalesConditions.Accountkey
+                Accountkey: oSalesConditions.Accountkey,
+                Condvalue : oSalesConditions.Condvalue
             });
         }
-
         return conditionByItems;
     }
 

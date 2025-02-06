@@ -289,7 +289,8 @@ export interface ServicesConditions {
   Curreniso: string
   Condincomp: boolean
   Condconfig: boolean
-  Condchaman: boolean
+  Condchaman: boolean,
+  Accountkey: string
 }
 
 export interface Service {
@@ -393,6 +394,7 @@ export interface Conditions {
   Numconvert: string
   Denominato: string
   Accountkey: string
+  Condvalue : string
 }
 
 export interface Partners {
