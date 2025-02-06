@@ -1,5 +1,4 @@
 import Dialog from "sap/m/Dialog";
-import MessageToast from "sap/m/MessageToast";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -10,12 +9,12 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import UIComponent from "sap/ui/core/UIComponent";
 import BusyIndicator from "sap/ui/core/BusyIndicator";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
-import Input, { Input$LiveChangeEvent, Input$SubmitEvent } from "sap/m/Input";
+import { Input$SubmitEvent } from "sap/m/Input";
 import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder, Service, ServicesConditions, Conditions, Partners, MessageERP, ItemOrderDivide } from "../model/types";
+import { ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, SalesHeaderIn, SalesItemERP, SalesServicesERP } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
 import Button from "sap/m/Button";
@@ -37,46 +36,6 @@ interface DetailRouteArg {
     }
 }
 
-interface SalesHeaderIn {
-    SalesOrg: string,
-    DistrChan: string,
-    Division: string,
-    DocType: string,
-    Currency: string,
-    PurchNoC: string //no esta
-    PurchDate: string | Date | null,
-    Ref1: string //no esta
-    RefDoc: string,
-    RefdocCat: string,
-    CtValidF: string | Date | null ,//no esta
-    CtValidT: string | Date | null,//no esta
-    PoDatS: string | Date | null,//no esta
-    SdDocCat: string,
-    CompCdeB: string,
-    CurrIso: string
-}
-
-interface SalesItem {
-    ItmNumber: string,
-    Material: string,
-    Plant: string,
-    TargetQty: string,
-    TargetQu: string //no esta
-    TargetVal: string //no esta
-    ItemCateg: string //no esta
-    MatlGroup: string //no esta
-    PurchDate: string | Date | null ,
-    Ref1: string //no esta
-    PoDatS: string | Date | null , //no esta
-    RefDoc: string,
-    RefDocIt : string,
-    RefDocCa : string,
-    ProfitCtr :string,
-    PckgNo : string,
-    WbsElem : string,
-    Route : string,
-    SalesConditionsInSet:  Conditions[]
-}
 /**
  * @namespace com.triiari.retrobilling.controller
  */
@@ -84,7 +43,6 @@ export default class DetailSalesDocument extends Controller {
 
     private oFragmentPositionPartitioning: Dialog | undefined;
     private oFragmentServices: Dialog | undefined;
-    private oInfoTemp: JSONModel;
     private oI18nModel: ResourceModel;
     private oI18n: ResourceBundle;
     private oCreateOrderModel: JSONModel;
@@ -103,32 +61,6 @@ export default class DetailSalesDocument extends Controller {
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oCreateOrderModel = this.getOwnerComponent()?.getModel("mCreateOrder") as JSONModel;
-        this.oInfoTemp = new JSONModel({
-            partitions: [
-                {
-                    pos: "10",
-                    material: "Titanium",
-                    quantity: 2,
-                    unit: "SER",
-                    amount: 5000
-                },
-                {
-                    pos: "130",
-                    material: "Titanium",
-                    quantity: 2,
-                    unit: "SER",
-                    amount: 5000
-                },
-                {
-                    pos: "140",
-                    material: "Titanium",
-                    quantity: 2,
-                    unit: "SER",
-                    amount: 5000
-                }
-            ]
-        });
-        this.getView()?.setModel(this.oInfoTemp, "temp");
         this.oRouter.getRoute("RouteDetailSalesOrder")?.attachMatched(this.onRouteMatched, this);
     }
 
@@ -410,7 +342,7 @@ export default class DetailSalesDocument extends Controller {
         let iCalculateAmountExceeded = 0;
 
         for(let i = 0; i<iNumberPartition; i++){
-            const oSelectItemByPartition : ItemOrderDivide = structuredClone(oSelectItem);
+            const oSelectItemByPartition : ItemOrder = structuredClone(oSelectItem);
             oSelectItemByPartition.NetValue = Math.round(iNetValueByPartition).toString();//iNetValueByPartition.toFixed(2);
             let iLengthArrPartitionByItem = arrPartitionByItem.length;
             let iCalculatePosition  = 0;
@@ -623,13 +555,13 @@ export default class DetailSalesDocument extends Controller {
         return oSalesHeader;
     }
 
-    public getSalesItemsInSet () : SalesItem[] {
+    public getSalesItemsInSet () : SalesItemERP[] {
         const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
-        const arrItems = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+        const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
         
         let arrSalesItems = [];
         for (const oItems of arrItems) {
-            const oSalesItem : SalesItem = {
+            const oSalesItem : SalesItemERP = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
                 Plant: oItems.Plant,
@@ -648,21 +580,22 @@ export default class DetailSalesDocument extends Controller {
                 WbsElem : oItems.WbsElem,
                 Route : oItems.Route,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
-                SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather , oItems.ItmNumber, oItems.CondUnit)
+                SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
+                SalesServicesSet: this.getServicesByItem(oItems.PckgNo)
             }
             arrSalesItems.push(oSalesItem);
         }
         return arrSalesItems;
     }
 
-    public getConditionByItems( itmNumberKeyFatherByItem : string,itmNumberKeyChildByItem : string, condUnit: string) : Conditions[]{
+    public getConditionByItems( itmNumberKeyFatherByItem : string,itmNumberKeyChildByItem : string, condUnit: string) : SalesItemConditionERP[]{
         
         const itmNumberKeyByItem : string = itmNumberKeyFatherByItem || itmNumberKeyChildByItem;
         const arrSalesConditions = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToConditions/results`);
         let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
             (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
         );
-        let conditionByItems : Conditions[] = [];
+        let conditionByItems : SalesItemConditionERP[] = [];
 
         for (const oSalesConditions of arrFilterConditionByItems) {
             const sCondType = {
@@ -697,7 +630,42 @@ export default class DetailSalesDocument extends Controller {
         return conditionByItems;
     }
 
-    public getSalesPartner() : Partners[] {
+    public getServicesByItem(sPackageNumber: string): SalesServicesERP[] {
+        const arrServices: Service[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`);
+        const setSubPackages = new Set<string>();
+        const arrFilteredServices = arrServices.filter(oService => {
+            const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
+            if(bMatched && oService.SubpckgNo !== "0000000000" && !setSubPackages.has(oService.SubpckgNo)) {
+                setSubPackages.add(oService.SubpckgNo);
+            }
+
+            return bMatched;
+        });
+        return arrFilteredServices.map(oService => ({
+            PckgNo: oService.PckgNo,
+            LineNo: oService.LineNo,
+            ExtLine: oService.ExtLine,
+            OutlLevel: oService.OutlLevel,
+            OutlNo: oService.OutlNo,
+            OutlInd: oService.OutlInd,
+            SubpckgNo: oService.SubpckgNo,
+            Service: oService.Service,
+            ExtServ: oService.ExtServ,
+            Quantity: oService.Quantity,
+            BaseUom: oService.BaseUom,
+            UomIso: oService.UomIso,
+            PriceUnit: oService.PriceUnit,
+            GrPrice: oService.GrPrice,
+            FromLine: oService.FromLine,
+            ToLine: oService.ToLine,
+            ShortText: oService.ShortText,
+            Userf1Txt: oService.Userf1Txt,
+            HiLineNo: oService.HiLineNo,
+            Bosgrp: oService.Bosgrp
+          }));
+    }
+
+    public getSalesPartner() : SalesPartnersERP[] {
         const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`);
         let arrPartner = [];
