@@ -498,6 +498,20 @@ export interface MessageERP {
   descMessage : string
 }
 
+export interface OrderHeaderInERP {
+  SalesOrg: string,
+  DistrChan: string,
+  Division: string
+}
+
+export interface SalesItemsInERPModify {
+  ItmNumber: string,
+  Material: string,
+  TargetQty: string,
+  SalesConditionsInSet:  SalesItemConditionERP[],
+  SalesServicesInSet: SalesServicesERP[]
+}
+
 
 // export interface ItemOrderDivide extends ItemOrder {
 //   ItmNumberFather?: string

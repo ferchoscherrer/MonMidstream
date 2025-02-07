@@ -14,7 +14,10 @@ import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, SalesHeaderIn, SalesItemERP, SalesServicesERP } from "../model/types";
+import { 
+    ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, 
+    SalesHeaderIn, SalesItemERP, SalesServicesERP, OrderHeaderInERP, SalesItemsInERPModify
+} from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
 import Button from "sap/m/Button";
@@ -793,21 +796,22 @@ export default class DetailSalesDocument extends Controller {
     public async onModifyOrder() : Promise<void> {
         try {
             BusyIndicator.show(0);
-            let oJsonModify = {
-                SalesHeaderIn: this.getSalesHeader(),
-                SalesItemsInSet: this.getSalesItemsInSet(),
-                SalesPartnersSet: this.getSalesPartner(),
+            const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+            const oJsonModify = {
+                SalesDocument: oSalesOrder.DocNumber,
+                OrderHeaderIn: this.getOrderHeaderIn(),
+                SalesItemsInSet: this.getSalesItemsInSetModify(),
                 ReturnSet: []
             };
 
             const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CHANGE_DOC_SRV,  oJsonModify);
 
-            if (!oResponse.Salesdocument){
-                this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
-            }else{
-                MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResponse.Salesdocument]) || '');
-                this.onClose();
-            }
+            // if (!oResponse.Salesdocument){
+            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
+            // }else{
+            //     MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResponse.Salesdocument]) || '');
+            //     this.onClose();
+            // }
             
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorModifySalesOrder");
@@ -815,5 +819,32 @@ export default class DetailSalesDocument extends Controller {
         } finally {
             BusyIndicator.hide();
         }
+    }
+
+    public getOrderHeaderIn() : OrderHeaderInERP {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+        const oOrderHeaderIn : OrderHeaderInERP = {
+            DistrChan: oSalesOrder.DistrChan,
+            Division: oSalesOrder.Division,
+            SalesOrg: oSalesOrder.SalesOrg
+        }
+        return oOrderHeaderIn;
+    }
+
+    public getSalesItemsInSetModify() : SalesItemsInERPModify[] {
+        const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+        
+        let arrSalesItems : SalesItemsInERPModify[]= [];
+        for (const oItems of arrItems) {
+            const oSalesItem : SalesItemsInERPModify = {
+                ItmNumber: oItems.ItmNumber,
+                Material: oItems.Material,
+                TargetQty: oItems.TargetQty,
+                SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
+                SalesServicesInSet: this.getServicesByItem(oItems.PckgNo)
+            }
+            arrSalesItems.push(oSalesItem);
+        }
+        return arrSalesItems;
     }
 }
