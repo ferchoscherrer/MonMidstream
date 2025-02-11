@@ -581,8 +581,12 @@ export default class DetailSalesDocument extends Controller {
         const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
         
+        let iCount = 1;
         let arrSalesItems = [];
         for (const oItems of arrItems) {
+            
+            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount);
+
             const oSalesItem : SalesItemERP = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
@@ -603,9 +607,10 @@ export default class DetailSalesDocument extends Controller {
                 Route : oItems.Route,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
                 SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
-                SalesServicesSet: this.getServicesByItem(oItems.PckgNo)
+                SalesServicesSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
+            iCount = oServiceByItem.i+1;
         }
         return arrSalesItems;
     }
@@ -652,18 +657,32 @@ export default class DetailSalesDocument extends Controller {
         return conditionByItems;
     }
 
-    public getServicesByItem(sPackageNumber: string): SalesServicesERP[] {
-        const arrServices: Service[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`);
+    public getServicesByItem(sPackageNumber: string, iterator: number) {
+        
+        const arrServices: Service[] =  JSON.parse(JSON.stringify(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`)));
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
+            let sNewPaPckgNo = iterator.toString().padStart(10,'0');
             const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
+            oService.OutlInd = ''
+            if(oService.PckgNo === sPackageNumber) oService.OutlInd = 'X';
+            
+            if(bMatched) oService.PckgNo = sNewPaPckgNo;
+            
             if(bMatched && oService.SubpckgNo !== "0000000000" && !setSubPackages.has(oService.SubpckgNo)) {
+                oService.PckgNo = sNewPaPckgNo;
                 setSubPackages.add(oService.SubpckgNo);
+            }
+
+            if (bMatched && oService.SubpckgNo !== "0000000000") {
+                iterator ++ 
+                sNewPaPckgNo = iterator.toString().padStart(10,'0');
+                oService.SubpckgNo = sNewPaPckgNo;
             }
 
             return bMatched;
         });
-        return arrFilteredServices.map(oService => ({
+        const oInfoERP = arrFilteredServices.map(oService => ({
             PckgNo: oService.PckgNo,
             LineNo: oService.LineNo,
             ExtLine: oService.ExtLine,
@@ -685,6 +704,11 @@ export default class DetailSalesDocument extends Controller {
             HiLineNo: oService.HiLineNo,
             Bosgrp: oService.Bosgrp
           }));
+
+        return {
+            i: iterator,
+            data: oInfoERP
+        }
     }
 
     public getSalesPartner() : SalesPartnersERP[] {
@@ -734,7 +758,6 @@ export default class DetailSalesDocument extends Controller {
             oMessage.typeMessage = typeMessage;
             oMessage.descMessage = descMessage;
         }
-        debugger
         return aMessageERP;
     }  
 
@@ -806,12 +829,7 @@ export default class DetailSalesDocument extends Controller {
 
             const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CHANGE_DOC_SRV,  oJsonModify);
 
-            // if (!oResponse.Salesdocument){
             this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
-            // }else{
-            //     MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResponse.Salesdocument]) || '');
-            //     this.onClose();
-            // }
             
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorModifySalesOrder");
@@ -835,15 +853,18 @@ export default class DetailSalesDocument extends Controller {
         const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
         
         let arrSalesItems : SalesItemsInERPModify[]= [];
+        let iCount = 1;
         for (const oItems of arrItems) {
+            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount);
             const oSalesItem : SalesItemsInERPModify = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
                 TargetQty: oItems.TargetQty,
                 SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
-                SalesServicesInSet: this.getServicesByItem(oItems.PckgNo)
+                SalesServicesInSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
+            iCount = oServiceByItem.i+1;
         }
         return arrSalesItems;
     }
