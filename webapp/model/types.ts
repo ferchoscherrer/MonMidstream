@@ -381,6 +381,34 @@ export interface Service {
   children?: Service[]
 }
 
+export interface Partner {
+  Operation: string
+  SdDoc: string
+  ItmNumber: string
+  PartnRole: string
+  Customer: string
+  VendorNo: string
+  PersonNo: string
+  Contact: string
+  Address: string
+  UnloadPt: string
+  Country: string
+  Countryiso: string
+  AddreIndi: string
+  Acc1Time: boolean
+  Custhityp: string
+  PricRel: boolean
+  RebateRel: boolean
+  LevelNr: string
+  DescPartn: string
+  Transpzone: string
+  AssignHi: string
+  VatRegNo: string
+  Furtherpar: boolean
+  PersNo: string
+  CalendUpd: string
+}
+
 export interface SalesHeaderIn {
   SalesOrg: string,
   DistrChan: string,

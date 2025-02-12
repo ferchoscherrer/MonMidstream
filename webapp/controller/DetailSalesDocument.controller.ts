@@ -16,7 +16,8 @@ import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
 import { 
     ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, 
-    SalesHeaderIn, SalesItemERP, SalesServicesERP, OrderHeaderInERP, SalesItemsInERPModify
+    SalesHeaderIn, SalesItemERP, SalesServicesERP, OrderHeaderInERP, SalesItemsInERPModify,
+    Partner
 } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
@@ -538,13 +539,15 @@ export default class DetailSalesDocument extends Controller {
 
             const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CREATE_DOC_SRV_01,  oJsonCreate);
 
-            if (!oResponse.Salesdocument){
-                this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
-            }else{
-                MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResponse.Salesdocument]) || '');
-                this.onClose();
-            }
-            
+            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results), () => {
+                const oResDocument: MessageERP = oResponse.ReturnSet.results.find((oResult: MessageERP) => oResult.Type === "S" && oResult.Id === "V1");
+                if(oResDocument) {
+                    // MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResDocument.MessageV2]) || '', {
+                    //     closeOnNavigation: false
+                    // });
+                    this.onClose();
+                }
+            });            
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorCreateSalesOrder");
             MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
@@ -602,7 +605,7 @@ export default class DetailSalesDocument extends Controller {
                 RefDocIt : oItems.ItmNumber,
                 RefDocCa : 'L',
                 ProfitCtr : oItems.ProfitCtr,
-                PckgNo : oItems.PckgNo,
+                PckgNo : iCount.toString().padStart(10,'0'),
                 WbsElem : oItems.WbsElem,
                 Route : oItems.Route,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
@@ -635,7 +638,8 @@ export default class DetailSalesDocument extends Controller {
                 ZK09: "ZK09",
             }[oSalesConditions.CondType] || '';
 
-            if(sCondType === "") continue;
+            // if(sCondType === "") continue; //Descomentar condicion cuando se soporten los demas condtypes
+            if(sCondType !== "ZK1P") continue; //Remover linea cuando sesoporten los demas condtypes
 
             conditionByItems.push({
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
@@ -712,10 +716,12 @@ export default class DetailSalesDocument extends Controller {
     }
 
     public getSalesPartner() : SalesPartnersERP[] {
-        const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`);
-        let arrPartner = [];
+        const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`) as Partner[];
+        let arrPartner: SalesPartnersERP[] = [];
 
         for (const oPartner of arrSalesPartner) {
+            if(!["SH", "BP"].includes(oPartner.PartnRole)) continue;
+
             arrPartner.push({
                 PartnRole: oPartner.PartnRole,
                 PartnNumb: oPartner.Customer,
@@ -761,7 +767,7 @@ export default class DetailSalesDocument extends Controller {
         return aMessageERP;
     }  
 
-    public onShowMessageERP(aMessageERP : MessageERP[]) : void {
+    public onShowMessageERP(aMessageERP : MessageERP[], onClose: Function = () => {}) : void {
 
         if(!this.oMessageViewERP){
             const oBntBackDialog = new Button({
@@ -794,7 +800,10 @@ export default class DetailSalesDocument extends Controller {
                 state: "Information",
                 icon: "sap-icon://information",
                 beginButton: new Button({
-                    press:  () => this.oDialogMessageERP.close(),
+                    press:  () => {
+                        this.oDialogMessageERP.close();
+                        onClose();
+                    },
                     text: this.oI18n.getText("close")
                 }),
                 customHeader: new Bar({
