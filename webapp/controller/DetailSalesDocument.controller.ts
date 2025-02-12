@@ -838,7 +838,12 @@ export default class DetailSalesDocument extends Controller {
 
             const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CHANGE_DOC_SRV,  oJsonModify);
 
-            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
+            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results), () => {
+                const oResDocument: MessageERP = oResponse.ReturnSet.results.find((oResult: MessageERP) => oResult.Type === "S" && oResult.Id === "V1");
+                if(oResDocument) {
+                    MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResDocument.MessageV2]) || '');
+                }
+            });
             
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorModifySalesOrder");
