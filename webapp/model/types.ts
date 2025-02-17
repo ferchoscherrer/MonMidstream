@@ -275,7 +275,8 @@ export interface ServicesConditions {
   AccessSeq: string
   Condcount: string
   Roundoffdi: string
-  Condvalue: string
+ // Condvalue: string
+  Condvalue: number
   Currency2: string
   CurrIso2: string
   Condcntrl: string
@@ -431,6 +432,7 @@ export interface SalesHeaderIn {
 export interface SalesItemERP {
   ItmNumber: string,
   Material: string,
+  ShortText: string,
   Plant: string,
   TargetQty: string,
   TargetQu: string //no esta

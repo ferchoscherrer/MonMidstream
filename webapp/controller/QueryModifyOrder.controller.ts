@@ -78,7 +78,7 @@ export default class QueryModifyOrder extends Controller {
     public async onOpenPopUpEstimationNumber(): Promise<void> {
 
         const oQuery = this.oModifyOrderModel.getProperty('/oQuery');
-        let arrFilter = [new Filter('Auart', FilterOperator.EQ, 'ZTB1')];
+        let arrFilter = [new Filter('Auart', FilterOperator.EQ, 'ZL6')];
         if (oQuery.selectCurrency) 
             arrFilter.push(new Filter("Waerk", FilterOperator.EQ, oQuery.selectCurrency.CurrencyCode));
         if (oQuery.selectRequest) 
