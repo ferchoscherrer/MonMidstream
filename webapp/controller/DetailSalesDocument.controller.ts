@@ -14,7 +14,11 @@ import Router from "sap/ui/core/routing/Router";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import EventBus from "sap/ui/core/EventBus";
-import { ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, SalesHeaderIn, SalesItemERP, SalesServicesERP } from "../model/types";
+import { 
+    ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, 
+    SalesHeaderIn, SalesItemERP, SalesServicesERP, OrderHeaderInERP, SalesItemsInERPModify,
+    Partner
+} from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
 import Button from "sap/m/Button";
@@ -34,6 +38,7 @@ interface DetailRouteArg {
     "?query": {
         factor: string
     }
+    "?modify": boolean 
 }
 
 /**
@@ -49,6 +54,7 @@ export default class DetailSalesDocument extends Controller {
     private oRouter : Router;
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
     private ZSD_SALES_CREATE_DOC_SRV_01: ODataModel;
+    private ZSD_SALES_CHANGE_DOC_SRV: ODataModel;
     private oDialogConfirmPosition : Dialog; 
     private oMessageViewERP : MessageView;
     private oDialogMessageERP : Dialog;
@@ -57,21 +63,38 @@ export default class DetailSalesDocument extends Controller {
     public onInit(): void {
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
         this.ZSD_SALES_CREATE_DOC_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_CREATE_DOC_SRV_01") as ODataModel;
+        this.ZSD_SALES_CHANGE_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_CHANGE_DOC_SRV") as ODataModel;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oCreateOrderModel = this.getOwnerComponent()?.getModel("mCreateOrder") as JSONModel;
         this.oRouter.getRoute("RouteDetailSalesOrder")?.attachMatched(this.onRouteMatched, this);
+        this.oRouter.getRoute("RouteDetailEditSalesOrder")?.attachMatched(this.onRouteMatchedModify, this);
     }
 
-    public onRouteMatched(oEvent: Route$MatchedEvent): void {
-        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+    public onRouteMatchedGeneric(oArguments : DetailRouteArg): void {
+        // const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
         const oQueryParams = oArguments["?query"];
 
         //Se asigna el valor al modelo para el escenario en que se entre directo en la ruta
         this.oCreateOrderModel.setProperty('/oQuery/iFactor', oQueryParams.factor);
 
         this.onQuerySalesOrder(oArguments?.estimationNumber);
+        
+    }
+
+    public onRouteMatched(oEvent: Route$MatchedEvent): void {
+        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+        
+        this.onRouteMatchedGeneric(oArguments);
+        
+    }
+
+    public onRouteMatchedModify(oEvent: Route$MatchedEvent): void {
+        const oArguments = oEvent.getParameter("arguments") as DetailRouteArg;
+        
+        this.oCreateOrderModel.setProperty('/bModify', true);
+        this.onRouteMatchedGeneric(oArguments);
         
     }
 
@@ -221,6 +244,7 @@ export default class DetailSalesDocument extends Controller {
     public onClose() {
         this.oRouter.navTo("RouteMain");
         EventBus.getInstance().publish("CreateOrder", "clear");
+        EventBus.getInstance().publish("QueryModifyOrder", "clear");
     }
 
     public onConfirmCopyPosition(): void {
@@ -515,14 +539,15 @@ export default class DetailSalesDocument extends Controller {
 
             const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CREATE_DOC_SRV_01,  oJsonCreate);
 
-            if (!oResponse.Salesdocument){
-                this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results));
-            }else{
-                MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResponse.Salesdocument]) || '');
-                this.oRouter.navTo("RouteMain");
-                EventBus.getInstance().publish("CreateOrder", "clear");
-            }
-            
+            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results), () => {
+                const oResDocument: MessageERP = oResponse.ReturnSet.results.find((oResult: MessageERP) => oResult.Type === "S" && oResult.Id === "V1");
+                if(oResDocument) {
+                    // MessageBox.success(this.oI18n.getText("succesCreateOreder", [oResDocument.MessageV2]) || '', {
+                    //     closeOnNavigation: false
+                    // });
+                    this.onClose();
+                }
+            });            
         } catch (oError : any) {
             const sErrorMessageDefault = this.oI18n.getText("errorCreateSalesOrder");
             MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
@@ -559,8 +584,12 @@ export default class DetailSalesDocument extends Controller {
         const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
         
+        let iCount = 1;
         let arrSalesItems = [];
         for (const oItems of arrItems) {
+            
+            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount);
+
             const oSalesItem : SalesItemERP = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
@@ -576,14 +605,15 @@ export default class DetailSalesDocument extends Controller {
                 RefDocIt : oItems.ItmNumber,
                 RefDocCa : 'L',
                 ProfitCtr : oItems.ProfitCtr,
-                PckgNo : oItems.PckgNo,
+                PckgNo : iCount.toString().padStart(10,'0'),
                 WbsElem : oItems.WbsElem,
                 Route : oItems.Route,
                 PoDatS: null,//"\/Date(1738021010567)\/", //no esta
                 SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
-                SalesServicesSet: this.getServicesByItem(oItems.PckgNo)
+                SalesServicesSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
+            iCount = oServiceByItem.i+1;
         }
         return arrSalesItems;
     }
@@ -608,7 +638,8 @@ export default class DetailSalesDocument extends Controller {
                 ZK09: "ZK09",
             }[oSalesConditions.CondType] || '';
 
-            if(sCondType === "") continue;
+            // if(sCondType === "") continue; //Descomentar condicion cuando se soporten los demas condtypes
+            if(sCondType !== "ZK1P") continue; //Remover linea cuando sesoporten los demas condtypes
 
             conditionByItems.push({
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
@@ -630,18 +661,32 @@ export default class DetailSalesDocument extends Controller {
         return conditionByItems;
     }
 
-    public getServicesByItem(sPackageNumber: string): SalesServicesERP[] {
-        const arrServices: Service[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`);
+    public getServicesByItem(sPackageNumber: string, iterator: number) {
+        
+        const arrServices: Service[] =  JSON.parse(JSON.stringify(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`)));
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
+            let sNewPaPckgNo = iterator.toString().padStart(10,'0');
             const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
+            oService.OutlInd = ''
+            if(oService.PckgNo === sPackageNumber) oService.OutlInd = 'X';
+            
+            if(bMatched) oService.PckgNo = sNewPaPckgNo;
+            
             if(bMatched && oService.SubpckgNo !== "0000000000" && !setSubPackages.has(oService.SubpckgNo)) {
+                oService.PckgNo = sNewPaPckgNo;
                 setSubPackages.add(oService.SubpckgNo);
+            }
+
+            if (bMatched && oService.SubpckgNo !== "0000000000") {
+                iterator ++ 
+                sNewPaPckgNo = iterator.toString().padStart(10,'0');
+                oService.SubpckgNo = sNewPaPckgNo;
             }
 
             return bMatched;
         });
-        return arrFilteredServices.map(oService => ({
+        const oInfoERP = arrFilteredServices.map(oService => ({
             PckgNo: oService.PckgNo,
             LineNo: oService.LineNo,
             ExtLine: oService.ExtLine,
@@ -663,14 +708,20 @@ export default class DetailSalesDocument extends Controller {
             HiLineNo: oService.HiLineNo,
             Bosgrp: oService.Bosgrp
           }));
+
+        return {
+            i: iterator,
+            data: oInfoERP
+        }
     }
 
     public getSalesPartner() : SalesPartnersERP[] {
-        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
-        const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`);
-        let arrPartner = [];
+        const arrSalesPartner = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToPartners/results`) as Partner[];
+        let arrPartner: SalesPartnersERP[] = [];
 
         for (const oPartner of arrSalesPartner) {
+            if(!["SH", "BP"].includes(oPartner.PartnRole)) continue;
+
             arrPartner.push({
                 PartnRole: oPartner.PartnRole,
                 PartnNumb: oPartner.Customer,
@@ -716,12 +767,9 @@ export default class DetailSalesDocument extends Controller {
         return aMessageERP;
     }  
 
-    public onShowMessageERP(aMessageERP : MessageERP[]) : void {
-
-        const oMessageERP = new JSONModel();
+    public onShowMessageERP(aMessageERP : MessageERP[], onClose: Function = () => {}) : void {
 
         if(!this.oMessageViewERP){
-
             const oBntBackDialog = new Button({
                 icon: "sap-icon://nav-back",
                 visible: false,
@@ -731,13 +779,9 @@ export default class DetailSalesDocument extends Controller {
                 }
             });
 
-            oMessageERP.setData(aMessageERP);
-
             this.oMessageViewERP = new MessageView({
                 showDetailsPageHeader:false,
-                itemSelect: ()=>{
-                    oBntBackDialog.setVisible(true);
-                },
+                itemSelect: () => oBntBackDialog.setVisible(true),
                 items:{
                     path: '/',
                     template: new MessageItem({
@@ -748,7 +792,6 @@ export default class DetailSalesDocument extends Controller {
                     })
                 }
             });
-            this.oMessageViewERP.setModel(oMessageERP);
 
             this.oDialogMessageERP = new Dialog({
                 resizable: true,
@@ -757,23 +800,86 @@ export default class DetailSalesDocument extends Controller {
                 state: "Information",
                 icon: "sap-icon://information",
                 beginButton: new Button({
-                    press:  () =>{
+                    press:  () => {
                         this.oDialogMessageERP.close();
+                        onClose();
                     },
                     text: this.oI18n.getText("close")
                 }),
                 customHeader: new Bar({
-                    contentLeft: [oBntBackDialog],
-                    contentMiddle: [
-                        new Title({text:this.oI18n.getText("messageERP")})
-                    ]
+                    contentLeft: [ oBntBackDialog ],
+                    contentMiddle: [ new Title({text:this.oI18n.getText("messageERP")}) ]
                 }),
-                contentWidth: "10%",
-                contentHeight: "20%",
+                contentWidth: "50%",
+                contentHeight: "40%",
                 verticalScrolling: false
-            })
+            });
+
+            this.oMessageViewERP.setModel(new JSONModel(aMessageERP));
         }
+
+        const oModel = this.oMessageViewERP.getModel() as JSONModel;
+        oModel.setData(aMessageERP);
+
         this.oMessageViewERP.navigateBack();
         this.oDialogMessageERP.open();
+    }
+
+    public async onModifyOrder() : Promise<void> {
+        try {
+            BusyIndicator.show(0);
+            const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+            const oJsonModify = {
+                SalesDocument: oSalesOrder.DocNumber,
+                OrderHeaderIn: this.getOrderHeaderIn(),
+                SalesItemsInSet: this.getSalesItemsInSetModify(),
+                ReturnSet: []
+            };
+
+            const { data: oResponse } = await ERP.createDataERP('/SalesHeaderSet', this.ZSD_SALES_CHANGE_DOC_SRV,  oJsonModify);
+
+            this.onShowMessageERP(this.getTypeErrorMessageERP(oResponse.ReturnSet.results), () => {
+                const oResDocument: MessageERP = oResponse.ReturnSet.results.find((oResult: MessageERP) => oResult.Type === "S" && oResult.Id === "V1");
+                if(oResDocument) {
+                    MessageBox.success(this.oI18n.getText("succesModifyOreder", [oResDocument.MessageV2]) || '');
+                }
+            });
+            
+        } catch (oError : any) {
+            const sErrorMessageDefault = this.oI18n.getText("errorModifySalesOrder");
+            MessageBox.error( oError.statusCode ? sErrorMessageDefault : oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
+    }
+
+    public getOrderHeaderIn() : OrderHeaderInERP {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
+        const oOrderHeaderIn : OrderHeaderInERP = {
+            DistrChan: oSalesOrder.DistrChan,
+            Division: oSalesOrder.Division,
+            SalesOrg: oSalesOrder.SalesOrg
+        }
+        return oOrderHeaderIn;
+    }
+
+    public getSalesItemsInSetModify() : SalesItemsInERPModify[] {
+        const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
+        
+        let arrSalesItems : SalesItemsInERPModify[]= [];
+        let iCount = 1;
+        for (const oItems of arrItems) {
+            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount);
+            const oSalesItem : SalesItemsInERPModify = {
+                ItmNumber: oItems.ItmNumber,
+                Material: oItems.Material,
+                TargetQty: oItems.TargetQty,
+                SalesConditionsInSet: this.getConditionByItems( oItems.ItmNumberFather || "" , oItems.ItmNumber, oItems.CondUnit),
+                SalesServicesInSet: oServiceByItem.data
+            }
+            arrSalesItems.push(oSalesItem);
+            iCount = oServiceByItem.i+1;
+        }
+        return arrSalesItems;
     }
 }

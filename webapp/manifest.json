@@ -65,6 +65,15 @@
           "localUri": "localService/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+      "ZSD_SALES_CHANGE_DOC_SRV": {
+        "uri": "srvMonRetro/ZSD_SALES_CHANGE_DOC_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "2.0"
+        }
       }
     },
     "crossNavigation": {
@@ -158,6 +167,13 @@
         "settings": {
           "useBatch": true
         }
+      },
+      "ZSD_SALES_CHANGE_DOC_SRV": {
+        "dataSource": "ZSD_SALES_CHANGE_DOC_SRV",
+        "preload": true,
+        "settings": {
+          "useBatch": true
+        }
       }
     },
     "resources": {
@@ -190,6 +206,14 @@
         {
           "name": "RouteDetailSalesOrder",
           "pattern": "detail/{estimationNumber}{?query}",
+          "target": [
+            "TargetMain",
+            "TargetDetailSalesOrder"
+          ]
+        },
+        {
+          "name": "RouteDetailEditSalesOrder",
+          "pattern": "detailEdit/{estimationNumber}{?query}",
           "target": [
             "TargetMain",
             "TargetDetailSalesOrder"

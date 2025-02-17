@@ -62,8 +62,7 @@
         <footer>
 			<Bar>
 				<contentRight>
-                    <Button 
-                        id="btnDescestimationNumber" 
+                    <Button
                         type="Accept" 
                         text="{i18n>Consultar}" 
                         enabled="{mModifyOrder>/oConfig/oAcctionBtnViewSalesCreate/enabledSalesCreate}" 
