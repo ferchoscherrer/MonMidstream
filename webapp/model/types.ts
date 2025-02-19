@@ -238,6 +238,7 @@ export interface ItemOrder {
   editQuantity: boolean
   TargetValCalculate: number,
   ItmNumberFather?: string
+  partition?: boolean
 }
 
 
@@ -540,6 +541,14 @@ export interface SalesItemsInERPModify {
   TargetQty: string,
   SalesConditionsInSet:  SalesItemConditionERP[],
   SalesServicesInSet: SalesServicesERP[]
+}
+
+export interface ServiceByItem {
+  sPackageNumber: string,
+  iterator: number,
+  iFactor: number,
+  partition: boolean,
+  NetValueItem: number
 }
 
 

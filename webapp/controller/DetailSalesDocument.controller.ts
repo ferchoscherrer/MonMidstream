@@ -17,7 +17,7 @@ import EventBus from "sap/ui/core/EventBus";
 import { 
     ItemOrder, Service, ServicesConditions, SalesItemConditionERP, SalesPartnersERP, MessageERP, 
     SalesHeaderIn, SalesItemERP, SalesServicesERP, OrderHeaderInERP, SalesItemsInERPModify,
-    Partner
+    Partner, ServiceByItem
 } from "../model/types";
 import { DialogType } from "sap/m/library";
 import Label from "sap/m/Label";
@@ -151,6 +151,7 @@ export default class DetailSalesDocument extends Controller {
             let oFindItemsTable = arrItemsTable.find( (oItem: ItemOrder) => oItem.ItmNumber === oItemPartition.ItmNumber);
             if (oFindItemsTable){
                 oFindItemsTable.NetValue = oItemPartition.NetValue;
+                oFindItemsTable.partition = oItemPartition.partition;
                 continue;
             }
             arrItemsTable.push(oItemPartition);
@@ -286,6 +287,7 @@ export default class DetailSalesDocument extends Controller {
         const arrItemsTable = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
         const iLength = arrItemsTable.length;
         const iCalculatePosition : number = (iLength*10) + 10;
+        oSelectItem.ItmNumberFather = oSelectItem.ItmNumber;
         oSelectItem.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
         arrItemsTable.push(oSelectItem);
         this.oCreateOrderModel.refresh(true);
@@ -367,7 +369,8 @@ export default class DetailSalesDocument extends Controller {
 
         for(let i = 0; i<iNumberPartition; i++){
             const oSelectItemByPartition : ItemOrder = structuredClone(oSelectItem);
-            oSelectItemByPartition.NetValue = Math.round(iNetValueByPartition).toString();//iNetValueByPartition.toFixed(2);
+            oSelectItemByPartition.NetValue = iNetValueByPartition.toFixed(2);
+            oSelectItemByPartition.partition = true;
             let iLengthArrPartitionByItem = arrPartitionByItem.length;
             let iCalculatePosition  = 0;
             if (i !== 0)  {
@@ -375,7 +378,7 @@ export default class DetailSalesDocument extends Controller {
                 iCalculatePosition = (iLengthOrderItems + iLengthArrPartitionByItem) * 10;
                 oSelectItemByPartition.ItmNumber = iCalculatePosition.toString().padStart(6,'0');
             }
-            iCalculateModifiedValuePartititionByItem += Math.round(iNetValueByPartition);
+            iCalculateModifiedValuePartititionByItem += Number(iNetValueByPartition.toFixed(2));
             arrPartitionByItem.push(oSelectItemByPartition);
         }
 
@@ -588,8 +591,16 @@ export default class DetailSalesDocument extends Controller {
         let iCount = 1;
         let arrSalesItems = [];
         for (const oItems of arrItems) {
-            
-            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount, oQueryData.iFactor);
+
+            const serviceByItem : ServiceByItem = {
+                iFactor: oQueryData.iFactor,
+                iterator: iCount,
+                sPackageNumber: oItems.PckgNo,
+                partition: oItems.partition || false,
+                NetValueItem: Number(oItems.NetValue) 
+            };
+
+            let oServiceByItem = this.getServicesByItem(serviceByItem);
             const sGrPrice = oServiceByItem.data.find(oService => Number(oService.GrPrice) !== 0)?.GrPrice ?? "0";
             
             const oSalesItem : SalesItemERP = {
@@ -639,7 +650,6 @@ export default class DetailSalesDocument extends Controller {
             (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
         );
         let conditionByItems : SalesItemConditionERP[] = [];
-
         for (const oSalesConditions of arrFilterConditionByItems) {
             const sCondType = {
                 ZEK1: "ZK1P",
@@ -671,7 +681,7 @@ export default class DetailSalesDocument extends Controller {
         return conditionByItems;
     }
 
-    public getServicesByItem(sPackageNumber: string, iterator: number, iFactor: number) {
+    public getServicesByItem( {iFactor, iterator, sPackageNumber, partition, NetValueItem}: ServiceByItem ) {
         const arrServices: Service[] =  JSON.parse(JSON.stringify(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`)));
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
@@ -679,7 +689,7 @@ export default class DetailSalesDocument extends Controller {
             const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
             oService.OutlInd = ''
             if(oService.PckgNo === sPackageNumber) oService.OutlInd = 'X';
-            
+            // Revisar iterador, se esta enviando duplicado el 1
             if(bMatched) oService.PckgNo = sNewPaPckgNo;
             
             if(bMatched && oService.SubpckgNo !== "0000000000" && !setSubPackages.has(oService.SubpckgNo)) {
@@ -695,9 +705,10 @@ export default class DetailSalesDocument extends Controller {
 
             return bMatched;
         });
-
+        
+        const iGrPriceFromPartition = NetValueItem / arrFilteredServices.length;
         const oInfoERP = arrFilteredServices.map(oService => {
-            const sGrPrice = Number(oService.GrPrice) * iFactor;
+            const sGrPrice = partition ? iGrPriceFromPartition * iFactor : Number(oService.GrPrice) * iFactor;
             return {
                 PckgNo: oService.PckgNo,
                 LineNo: oService.LineNo,
@@ -883,7 +894,15 @@ export default class DetailSalesDocument extends Controller {
         let arrSalesItems : SalesItemsInERPModify[]= [];
         let iCount = 1;
         for (const oItems of arrItems) {
-            let oServiceByItem = this.getServicesByItem(oItems.PckgNo, iCount, oQueryData.iFactor);
+
+            const serviceByItem : ServiceByItem = {
+                iFactor: oQueryData.iFactor,
+                iterator: iCount,
+                sPackageNumber: oItems.PckgNo,
+                copy: !!oItems.ItmNumberFather
+            };
+
+            let oServiceByItem = this.getServicesByItem(serviceByItem);
             const oSalesItem : SalesItemsInERPModify = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,

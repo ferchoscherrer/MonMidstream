@@ -35,7 +35,6 @@ export default class CreateOrder extends Controller {
     private oFragmentChannel: Dialog;
     private oFragmentCurrency: Dialog;
     private oRouter: Router;
-    private ZSD_SALES_DOC_GET_SRV_01: ODataModel;
     private ZSD_SALES_GET_DOC_SRV: ODataModel;
     public formater = formatter;
 
@@ -47,7 +46,6 @@ export default class CreateOrder extends Controller {
         this.oI18nModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
         this.oI18n = this.oI18nModel.getResourceBundle() as ResourceBundle;
         this.oRouter = (this.getOwnerComponent() as UIComponent).getRouter();
-        this.ZSD_SALES_DOC_GET_SRV_01 = this.getOwnerComponent()?.getModel("ZSD_SALES_DOC_GET_SRV_01") as ODataModel;
         this.ZSD_SALES_GET_DOC_SRV = this.getOwnerComponent()?.getModel("ZSD_SALES_GET_DOC_SRV") as ODataModel;
 
         EventBus.getInstance().subscribe("CreateOrder", "clear", this.onClearFilter.bind(this));
