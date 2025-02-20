@@ -174,7 +174,7 @@
                     <t:Column hAlign="End">
                         <Text text="{i18n>netValue}"/>
                         <t:template>
-                            <Text text="${
+                            <Text text="$ {
                                 path: 'mCreateOrder>NetValue',
                                 type: 'sap.ui.model.type.Float',
                                 formatOptions: {
@@ -190,7 +190,7 @@
                     <t:Column hAlign="End">
                         <Text text="{i18n>updatedPrice}"/>
                         <t:template>
-                            <Text text="${
+                            <Text text="$ {
                                 path: 'mCreateOrder>TargetValCalculate',
                                 type: 'sap.ui.model.type.Float',
                                 formatOptions: {

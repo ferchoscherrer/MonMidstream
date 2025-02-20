@@ -285,7 +285,7 @@ export default class QueryModifyOrder extends Controller {
         if (!oQueryData.estimationNumber) 
             throw new Error(this.oI18n.getText("errorEstimateNumberEmpty"));
         if (!oQueryData.iFactor) 
-            throw new Error(this.oI18n.getText("errorFactorEmpty"));       
+          throw new Error(this.oI18n.getText("errorFactorEmpty"));  //FMS para el area de modificar, no es necesario un factor.
     }
 
     public onClearFilter() : void {

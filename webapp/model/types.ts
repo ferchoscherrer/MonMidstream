@@ -546,6 +546,7 @@ export interface SalesItemsInERPModify {
 export interface ServiceByItem {
   sPackageNumber: string,
   iterator: number,
+  interatorSubPackage: number,
   iFactor: number,
   partition: boolean,
   NetValueItem: number

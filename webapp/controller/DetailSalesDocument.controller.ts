@@ -436,6 +436,205 @@ export default class DetailSalesDocument extends Controller {
         return arrRoots;
     }
 
+    public convertServicesToHierarchy2(arrServices: Service[]): Service[] {
+        const oMapLevelsServices: Record<string, Service> = {};
+        const arrRoots = [];
+        for(const oPos of arrServices) {
+            if(oPos.Service) continue;
+            oPos.children = [];
+            oMapLevelsServices[oPos.LineNo] = oPos;
+        }
+
+        for(const oPos of arrServices) {
+            if((oPos.ExtLine !== "0000000000" && oPos.OutlLevel !== 0) || oPos.Service) {
+                if(oPos.SubpckgNo !== "0000000000") {
+                    const oChild = arrServices.filter(oService => oService.PckgNo === oPos.SubpckgNo);
+                    oPos.children?.push(...oChild);
+                }
+                const oParent = oMapLevelsServices[oPos.ExtLine];
+                if(oParent) oParent.children?.push(oPos);
+            } else {
+                arrRoots.push(oPos);
+            }
+        }
+        return arrRoots;
+    }
+      
+    // public restartPackageNumbersServicesHierarchy(
+    //     arrOriginalServices: Service[], 
+    //     pckgInicial: number, 
+    //     subpckgInicial: number
+    // ): {
+    //     ultimoPckg: number, 
+    //     ultimoSubpckg: number, 
+    //     arr: Service[]
+    // } {
+    //     let iPackageCounter = pckgInicial;
+    //     let iSubPackageCounter = subpckgInicial;
+
+    //     function tranformPackageService(oService: Service, sParentSubpckg?: string): Service {
+    //         const oNewService: Service = {
+    //             ...oService,
+    //             PckgNo: iPackageCounter.toString().padStart(10, '0'),
+    //             SubpckgNo: oService.SubpckgNo === '0000000000' ? '0000000000' : iSubPackageCounter.toString().padStart(10, '0'),
+    //         };
+
+    //         if (oService.children && oService.children.length > 0)
+    //             oNewService.children = oService.children.map(oChild => tranformPackageService(oChild, oNewService.SubpckgNo));
+
+    //         if (oService.SubpckgNo !== '0000000000' && oService.children && oService.children.length > 0) 
+    //             iSubPackageCounter++;
+    //         if (oService.Service && !oService.children && sParentSubpckg) 
+    //             oNewService.PckgNo = sParentSubpckg;
+
+    //         return oNewService;
+    //     }
+
+    //     function findLastSubPackage(arrServices: Service[]): string | null {
+    //         if (!arrServices || arrServices.length === 0) return null;
+
+    //         for (let i = arrServices.length - 1; i >= 0; i--) {
+    //             const oService = arrServices[i];
+    //             if (oService.Service) {
+    //                 if (oService.SubpckgNo !== "0000000000") return oService.SubpckgNo;
+    //                 else return null;
+    //             }
+
+    //             if (oService.children && oService.children.length > 0) {
+    //                 const resultadoRecursivo = findLastSubPackage(oService.children);
+    //                 if (resultadoRecursivo) return resultadoRecursivo;
+    //             }
+    //             if (oService.SubpckgNo !== "0000000000") return oService.SubpckgNo;
+    //         }
+    //         return null;
+    //     }
+
+    //     let iLastSubPackage = subpckgInicial - 1;
+    //     let iLastPackage = pckgInicial - 1;
+
+    //     const arrResultServices = arrOriginalServices.map((oService, iIndex) => {
+    //         if (iIndex > 0) {
+    //             iPackageCounter = iLastSubPackage + 1;
+    //             iSubPackageCounter = iLastSubPackage + 2;
+    //         } else {
+    //             iPackageCounter = pckgInicial;
+    //             iSubPackageCounter = subpckgInicial;
+    //         }
+
+    //         const oTransformedService = tranformPackageService(oService);
+    //         const sLastSubPackageFound = findLastSubPackage([oTransformedService]);
+    //         iLastSubPackage = sLastSubPackageFound ? parseInt(sLastSubPackageFound, 10) : iLastSubPackage;
+    //         iLastPackage = iPackageCounter;
+    //         return oTransformedService;
+    //     });
+
+    //     return {
+    //         ultimoPckg: iLastPackage, 
+    //         ultimoSubpckg: iLastSubPackage, 
+    //         arr: arrResultServices
+    //     };
+    // }
+
+    public restartPackageNumbersServicesHierarchy(data: Service[], pckgInicial: number = 1, subpckgInicial: number = 2): {
+        ultimoPckg: number,
+        ultimoSubpckg: number,
+        arregloAjustado: Service[]
+    } {
+        let contadorPckg = pckgInicial;
+        let contadorSubpckg = subpckgInicial;
+
+        function transformarItem(item: Service, padreSubpckg?: string): Service {
+            const nuevoItem: Service = {
+                ...item,
+                PckgNo: contadorPckg.toString().padStart(10, '0'),
+                SubpckgNo: item.SubpckgNo === '0000000000' ? '0000000000' : contadorSubpckg.toString().padStart(10, '0'),
+            };
+
+            if (item.children && item.children.length > 0) {
+                nuevoItem.children = item.children.map(child => transformarItem(child, nuevoItem.SubpckgNo));
+            }
+
+            if (item.SubpckgNo !== '0000000000' && item.children && item.children.length > 0) {
+                contadorSubpckg++;
+            }
+
+            if (item.Service && !item.children && padreSubpckg) {
+                nuevoItem.PckgNo = padreSubpckg;
+            }
+
+            return nuevoItem;
+        }
+
+        function encontrarUltimoSubpckg(items: Service[]): string | null {
+            if (!items || items.length === 0) {
+                return null;
+            }
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                if (item.Service) {
+                    if (item.SubpckgNo !== "0000000000") {
+                        return item.SubpckgNo;
+                    } else {
+                        return null;
+                    }
+                }
+
+                if (item.children && item.children.length > 0) {
+                    const resultadoRecursivo = encontrarUltimoSubpckg(item.children);
+                    if (resultadoRecursivo) {
+                        return resultadoRecursivo;
+                    }
+                }
+                if (item.SubpckgNo !== "0000000000") {
+                    return item.SubpckgNo;
+                }
+            }
+
+            return null;
+        }
+
+        let ultimoSubpckg = subpckgInicial - 1;
+        let ultimoPckg = pckgInicial - 1;
+
+        const arregloAjustado = data.map((item, index) => {
+            if (index > 0) {
+                contadorPckg = ultimoSubpckg + 1;
+                contadorSubpckg = ultimoSubpckg + 2;
+            } else {
+                contadorPckg = pckgInicial;
+                contadorSubpckg = subpckgInicial;
+            }
+
+            const itemTransformado = transformarItem(item);
+            const ultimoSubpckgEncontrado = encontrarUltimoSubpckg([itemTransformado]);
+            ultimoSubpckg = ultimoSubpckgEncontrado ? parseInt(ultimoSubpckgEncontrado, 10) : ultimoSubpckg;
+            ultimoPckg = contadorPckg;
+            return itemTransformado;
+        });
+
+        return {
+            arregloAjustado,
+            ultimoPckg,
+            ultimoSubpckg,
+        };
+    }
+
+    public flattenServiceHierarchy(arrServices: Service[]): Service[] {
+        const arrResultServices: Service[] = [];
+
+        function traverse(node: Service): void {
+            arrResultServices.push(node);
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(traverse);
+            }
+            delete node.children; // Opcional: elimina la propiedad 'children' después de procesarla.
+        }
+
+        arrServices.forEach(traverse);
+        return arrResultServices;
+    }
+
     public async onOpenServicesFragment(oEvent: RowActionItem$PressEvent) {
         const oButton = oEvent.getSource();
         const oContext = oButton.getBindingContext("mCreateOrder");
@@ -589,12 +788,15 @@ export default class DetailSalesDocument extends Controller {
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
         
         let iCount = 1;
+        let iCountSubPackage = 2;
         let arrSalesItems = [];
+
         for (const oItems of arrItems) {
 
             const serviceByItem : ServiceByItem = {
                 iFactor: oQueryData.iFactor,
                 iterator: iCount,
+                interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
                 partition: oItems.partition || false,
                 NetValueItem: Number(oItems.NetValue) 
@@ -632,7 +834,8 @@ export default class DetailSalesDocument extends Controller {
                 SalesServicesSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
-            iCount = oServiceByItem.i+1;
+            iCount = oServiceByItem.interatorSubPackage + 1;
+            iCountSubPackage = iCount + 1;
         }
         return arrSalesItems;
     }
@@ -681,33 +884,32 @@ export default class DetailSalesDocument extends Controller {
         return conditionByItems;
     }
 
-    public getServicesByItem( {iFactor, iterator, sPackageNumber, partition, NetValueItem}: ServiceByItem ) {
-        const arrServices: Service[] =  JSON.parse(JSON.stringify(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`)));
+    public getServicesByItem( {iFactor, sPackageNumber, iterator, interatorSubPackage, partition, NetValueItem}: ServiceByItem ) {
+        const arrServices: Service[] = structuredClone(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`));
+
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
-            let sNewPaPckgNo = iterator.toString().padStart(10,'0');
             const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
             oService.OutlInd = ''
             if(oService.PckgNo === sPackageNumber) oService.OutlInd = 'X';
-            // Revisar iterador, se esta enviando duplicado el 1
-            if(bMatched) oService.PckgNo = sNewPaPckgNo;
             
             if(bMatched && oService.SubpckgNo !== "0000000000" && !setSubPackages.has(oService.SubpckgNo)) {
-                oService.PckgNo = sNewPaPckgNo;
                 setSubPackages.add(oService.SubpckgNo);
             }
-
-            if (bMatched && oService.SubpckgNo !== "0000000000") {
-                iterator ++ 
-                sNewPaPckgNo = iterator.toString().padStart(10,'0');
-                oService.SubpckgNo = sNewPaPckgNo;
-            }
-
             return bMatched;
         });
+
+        const arrBaseServicesHierarchy = this.convertServicesToHierarchy2(arrFilteredServices);
+        const {
+            ultimoPckg,
+            ultimoSubpckg,
+            arregloAjustado: arrRestartedServicesHierarchy
+        } = this.restartPackageNumbersServicesHierarchy(arrBaseServicesHierarchy, iterator, interatorSubPackage);
+        const arrFlatternServicesHierarchy = this.flattenServiceHierarchy(arrRestartedServicesHierarchy);
         
-        const iGrPriceFromPartition = NetValueItem / arrFilteredServices.length;
-        const oInfoERP = arrFilteredServices.map(oService => {
+        // const iGrPriceFromPartition = NetValueItem / arrFilteredServices.length;
+        const iGrPriceFromPartition = NetValueItem / arrFlatternServicesHierarchy.length;
+        const oInfoERP: SalesServicesERP[] = arrFlatternServicesHierarchy.map(oService => {
             const sGrPrice = partition ? iGrPriceFromPartition * iFactor : Number(oService.GrPrice) * iFactor;
             return {
                 PckgNo: oService.PckgNo,
@@ -730,11 +932,12 @@ export default class DetailSalesDocument extends Controller {
                 Userf1Txt: oService.Userf1Txt,
                 HiLineNo: oService.HiLineNo,
                 Bosgrp: oService.Bosgrp
-            }
+            };
         });
 
         return {
-            i: iterator,
+            iterator: ultimoPckg,
+            interatorSubPackage: ultimoSubpckg,
             data: oInfoERP
         }
     }
@@ -744,8 +947,6 @@ export default class DetailSalesDocument extends Controller {
         let arrPartner: SalesPartnersERP[] = [];
 
         for (const oPartner of arrSalesPartner) {
-            if(!["SH", "BP"].includes(oPartner.PartnRole)) continue;
-
             arrPartner.push({
                 PartnRole: oPartner.PartnRole,
                 PartnNumb: oPartner.Customer,
@@ -893,11 +1094,13 @@ export default class DetailSalesDocument extends Controller {
         
         let arrSalesItems : SalesItemsInERPModify[]= [];
         let iCount = 1;
+        let iCountSubPackage = 2;
         for (const oItems of arrItems) {
 
             const serviceByItem : ServiceByItem = {
                 iFactor: oQueryData.iFactor,
                 iterator: iCount,
+                interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
                 partition: false,
                 NetValueItem: 0
@@ -916,7 +1119,8 @@ export default class DetailSalesDocument extends Controller {
                 SalesServicesInSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
-            iCount = oServiceByItem.i+1;
+            iCount = oServiceByItem.iterator;
+            iCountSubPackage = oServiceByItem.interatorSubPackage;
         }
         return arrSalesItems;
     }

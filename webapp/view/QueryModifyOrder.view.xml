@@ -40,7 +40,7 @@
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mModifyOrder>/oQuery/selectSalesOrganization/SalesOrgVta}} {=${mModifyOrder>/oQuery/selectSalesOrganization/SalesOrgName}}" valueHelpRequest="onOpenPopUpSalesOrganization" />
                     <!-- <Label text="{i18n>channel}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{mModifyOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
-                    <Label text="{i18n>factor}" labelFor="iptFactor" required="true" />
+                    <Label text="{i18n>factor}" labelFor="iptFactor" required="false" />
                     <Input 
                         id="iptFactor"
                         value="{
