@@ -174,7 +174,7 @@
                     <t:Column hAlign="End">
                         <Text text="{i18n>netValue}"/>
                         <t:template>
-                            <Text text="{
+                            <Text text="${
                                 path: 'mCreateOrder>NetValue',
                                 type: 'sap.ui.model.type.Float',
                                 formatOptions: {
@@ -190,7 +190,7 @@
                     <t:Column hAlign="End">
                         <Text text="{i18n>updatedPrice}"/>
                         <t:template>
-                            <Text text="{
+                            <Text text="${
                                 path: 'mCreateOrder>TargetValCalculate',
                                 type: 'sap.ui.model.type.Float',
                                 formatOptions: {
@@ -203,6 +203,21 @@
                             }"/>
                         </t:template>
                     </t:Column>	
+                    
+                    <t:Column >
+                        <Text text="{i18n>wbselement}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>WbsElem'}"/>
+                        </t:template>
+                    </t:Column>
+
+                    <t:Column >
+                        <Text text="{i18n>cebe}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>ProfitCtr'}"/>
+                        </t:template>
+                    </t:Column>
+
                 </t:columns>
                 <t:noData>
                     <IllustratedMessage

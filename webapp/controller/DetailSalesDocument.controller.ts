@@ -116,7 +116,7 @@ export default class DetailSalesDocument extends Controller {
 
             for (const oItem of arrSalesOrderItems) {
                 oItem.editQuantity = false;
-                oItem.TargetValCalculate = oItem.NetValue * parseFloat(oQueryData.iFactor)
+                oItem.TargetValCalculate = (oItem.NetValue * parseFloat(oQueryData.iFactor)).toFixed(2);
             }
             
             this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
@@ -899,7 +899,8 @@ export default class DetailSalesDocument extends Controller {
                 iFactor: oQueryData.iFactor,
                 iterator: iCount,
                 sPackageNumber: oItems.PckgNo,
-                copy: !!oItems.ItmNumberFather
+                partition: false,
+                NetValueItem: 0
             };
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
