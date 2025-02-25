@@ -854,18 +854,20 @@ export default class DetailSalesDocument extends Controller {
             (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
         );
         let conditionByItems : SalesItemConditionERP[] = [];
+        const oMapCondType: Record<string, string> = {
+            ZEK1: "ZK1P",
+            ZEK2: "ZK2P",
+            ZEK3: "ZK3P",
+            ZEK4: "ZK4P",
+            ZEK5: "ZK5P",
+        };
         for (const oSalesConditions of arrFilterConditionByItems) {
-            let sCondType = {
-                ZEK1: "ZK1P",
-                ZEK2: "ZK2P",
-                ZEK3: "ZK3P",
-                ZEK4: "ZK4P",
-                ZEK5: "ZK5P",
-            }[oSalesConditions.CondType] || '';
+            let sCondType = bIsEdition ?
+                oSalesConditions.CondType :
+                oMapCondType[oSalesConditions.CondType] ?? '';
 
-            if(bIsEdition) sCondType = oSalesConditions.CondType;
-
-            if (sCondType === "" || oSalesConditions.Condvalue <= 0) continue; // para enviar solo las condition type con valor
+            if (bIsEdition && !Object.values(oMapCondType).includes(sCondType)) continue;
+            if (sCondType === "" || oSalesConditions.Condvalue <= 0) continue;
 
             conditionByItems.push({
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
