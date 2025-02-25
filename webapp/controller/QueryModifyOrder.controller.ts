@@ -312,7 +312,7 @@ export default class QueryModifyOrder extends Controller {
         });
 
         this.oModifyOrderModel.setProperty(`/oConfig/bToRequiredQuery`, true);
-        this.oModifyOrderModel.setProperty(`/oQuery/iFactor`, 0);
+        this.oModifyOrderModel.setProperty(`/oQuery/iFactor`, 1);
         this.oModifyOrderModel.refresh(true);
     }
 

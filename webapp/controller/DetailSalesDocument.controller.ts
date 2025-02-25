@@ -1102,11 +1102,13 @@ export default class DetailSalesDocument extends Controller {
                 iterator: iCount,
                 interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
-                partition: false,
-                NetValueItem: 0
+                partition: oItems.partition || false,
+                NetValueItem: Number(oItems.NetValue) 
             };
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
+            const sGrPrice = oServiceByItem.data.find(oService => Number(oService.GrPrice) !== 0)?.GrPrice ?? "0";
+
             const oSalesItem : SalesItemsInERPModify = {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
@@ -1114,13 +1116,14 @@ export default class DetailSalesDocument extends Controller {
                 SalesConditionsInSet: this.getConditionByItems(
                     oItems.ItmNumberFather || "" , 
                     oItems.ItmNumber, 
-                    oItems.CondUnit
+                    oItems.CondUnit,
+                    sGrPrice
                 ),
                 SalesServicesInSet: oServiceByItem.data
             }
             arrSalesItems.push(oSalesItem);
-            iCount = oServiceByItem.iterator;
-            iCountSubPackage = oServiceByItem.interatorSubPackage;
+            iCount = oServiceByItem.iterator + 1;
+            iCountSubPackage = oServiceByItem.interatorSubPackage + 1;
         }
         return arrSalesItems;
     }

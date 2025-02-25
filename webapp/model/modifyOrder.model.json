@@ -4,7 +4,7 @@
         "request": "",
         "salesOrganization": "",
         "channel": "",
-        "iFactor": 0,
+        "iFactor": 1,
         "currency": "",
         "selectSalesOrganization": null,
         "selectRequest": null,

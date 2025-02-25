@@ -42,7 +42,6 @@
                     <Input showValueHelp="true" valueHelpOnly="true" value="{mModifyOrder>/oQuery/channel}" valueHelpRequest="onOpenPopUpChannel"/> -->
                     <Label text="{i18n>factor}" labelFor="iptFactor" required="false"  />
                     <Input 
-                       
                         id="iptFactor"
                         value="{
                             path: 'mModifyOrder>/oQuery/iFactor',
@@ -53,6 +52,8 @@
                             }
                         }" 
                         change="onChangeFormatterNumber"
+                        editable="false"
+                        visible="false"
                      />
                     <Label text="{i18n>currency}" />
                     <Input showValueHelp="true" valueHelpOnly="true" value="{=${mModifyOrder>/oQuery/selectCurrency/CurrencyCode}} {=${mModifyOrder>/oQuery/selectCurrency/CurrencyName}}" valueHelpRequest="onOpenPopUpCurrency" />
