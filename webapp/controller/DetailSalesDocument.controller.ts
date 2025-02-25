@@ -817,7 +817,7 @@ export default class DetailSalesDocument extends Controller {
                 MatlGroup: oItems.MatlGroup,
                 PurchDate: oSalesOrder.PurchDate,
                 Ref1: oSalesOrder.Ref1,
-                RefDoc : oSalesOrder.DocNumber,
+                RefDoc :  oSalesOrder.DocNumber, // validar la posicion que se debe cambiar por el pedido de cambio.
                 RefDocIt : oItems.ItmNumber,
                 RefDocCa : 'L',
                 ProfitCtr : oItems.ProfitCtr,
