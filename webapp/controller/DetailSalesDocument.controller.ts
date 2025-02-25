@@ -844,7 +844,8 @@ export default class DetailSalesDocument extends Controller {
         itmNumberKeyFatherByItem : string, 
         itmNumberKeyChildByItem : string, 
         sCondUnit: string,
-        sCondValue?: string
+        sCondValue?: string,
+        bIsEdition: boolean = false
     ) : SalesItemConditionERP[]{
         
         const itmNumberKeyByItem : string = itmNumberKeyFatherByItem || itmNumberKeyChildByItem;
@@ -854,13 +855,15 @@ export default class DetailSalesDocument extends Controller {
         );
         let conditionByItems : SalesItemConditionERP[] = [];
         for (const oSalesConditions of arrFilterConditionByItems) {
-            const sCondType = {
+            let sCondType = {
                 ZEK1: "ZK1P",
                 ZEK2: "ZK2P",
                 ZEK3: "ZK3P",
                 ZEK4: "ZK4P",
                 ZEK5: "ZK5P",
             }[oSalesConditions.CondType] || '';
+
+            if(bIsEdition) sCondType = oSalesConditions.CondType;
 
             if (sCondType === "" || oSalesConditions.Condvalue <= 0) continue; // para enviar solo las condition type con valor
 
@@ -1133,7 +1136,8 @@ export default class DetailSalesDocument extends Controller {
                     oItems.ItmNumberFather || "" , 
                     oItems.ItmNumber, 
                     oItems.CondUnit,
-                    sGrPrice
+                    sGrPrice,
+                    true
                 ),
                 SalesServicesInSet: oServiceByItem.data
             }
