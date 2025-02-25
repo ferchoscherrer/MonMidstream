@@ -535,11 +535,7 @@ export interface OrderHeaderInERP {
   Division: string
 }
 
-export interface SalesItemsInERPModify {
-  ItmNumber: string,
-  Material: string,
-  TargetQty: string,
-  SalesConditionsInSet:  SalesItemConditionERP[],
+export interface SalesItemsInERPModify extends Omit<SalesItemERP, 'SalesServicesSet'> {
   SalesServicesInSet: SalesServicesERP[]
 }
 

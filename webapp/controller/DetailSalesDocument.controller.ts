@@ -1089,6 +1089,7 @@ export default class DetailSalesDocument extends Controller {
     }
 
     public getSalesItemsInSetModify() : SalesItemsInERPModify[] {
+        const oSalesOrder = this.oCreateOrderModel.getProperty('/oSalesOrder');
         const arrItems: ItemOrder[] = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToItems/results`);
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
         
@@ -1113,6 +1114,21 @@ export default class DetailSalesDocument extends Controller {
                 ItmNumber: oItems.ItmNumber,
                 Material: oItems.Material,
                 TargetQty: oItems.TargetQty,
+                ShortText: oItems.ShortText, Plant: oItems.Plant,
+                TargetQu: oItems.TargetQu,
+                TargetVal: oItems.TargetValCalculate.toString(),
+                ItemCateg: '',//oItems.ItemCateg,
+                MatlGroup: oItems.MatlGroup,
+                PurchDate: oSalesOrder.PurchDate,
+                Ref1: oSalesOrder.Ref1,
+                RefDoc :  oSalesOrder.DocNumber, // validar la posicion que se debe cambiar por el pedido de cambio.
+                RefDocIt : oItems.ItmNumber,
+                RefDocCa : 'L',
+                ProfitCtr : oItems.ProfitCtr,
+                PckgNo : iCount.toString().padStart(10,'0'),
+                WbsElem : oItems.WbsElem,
+                Route : oItems.Route,
+                PoDatS: null,//"\/Date(1738021010567)\/", //no esta
                 SalesConditionsInSet: this.getConditionByItems(
                     oItems.ItmNumberFather || "" , 
                     oItems.ItmNumber, 
