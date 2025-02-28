@@ -850,6 +850,8 @@ export default class DetailSalesDocument extends Controller {
         
         const itmNumberKeyByItem : string = itmNumberKeyFatherByItem || itmNumberKeyChildByItem;
         const arrSalesConditions = this.oCreateOrderModel.getProperty(`/oSalesOrder/ToConditions/results`);
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+        let ifactorcond = oQueryData.iFactor;
         let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
             (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
         );
@@ -874,7 +876,7 @@ export default class DetailSalesDocument extends Controller {
                 CondStNo: oSalesConditions.CondStNo,
                 CondCount: oSalesConditions.CondCount,
                 CondType: sCondType,
-                CondValue: sCondValue ?? oSalesConditions.CondValue,
+                CondValue: (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString(), //sCondValue ?? oSalesConditions.CondValue,
                 Currency: oSalesConditions.Currency,
                 CondUnit: sCondUnit,
                 CondPUnt: oSalesConditions.CondPUnt,
@@ -883,7 +885,7 @@ export default class DetailSalesDocument extends Controller {
                 Numconvert: oSalesConditions.Numconvert,
                 Denominato: oSalesConditions.Denominato,
                 Accountkey: oSalesConditions.Accountkey,
-                Condvalue : sCondValue ?? oSalesConditions.CondValue,
+                Condvalue : (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString() //sCondValue ?? oSalesConditions.CondValue,
             });
         }
         return conditionByItems;
@@ -931,6 +933,7 @@ export default class DetailSalesDocument extends Controller {
                 UomIso: oService.UomIso,
                 PriceUnit: oService.PriceUnit,
                 GrPrice: sGrPrice.toString(),
+              //  TargetVal : (parseFloat(oService.TargetVal) * iFactor).toString,
                 FromLine: oService.FromLine,
                 ToLine: oService.ToLine,
                 ShortText: oService.ShortText,
@@ -1126,8 +1129,8 @@ export default class DetailSalesDocument extends Controller {
                 MatlGroup: oItems.MatlGroup,
                 PurchDate: oSalesOrder.PurchDate,
                 Ref1: oSalesOrder.Ref1,
-                RefDoc :  oSalesOrder.DocNumber, // validar la posicion que se debe cambiar por el pedido de cambio.
-                RefDocIt : oItems.ItmNumber,
+                RefDoc :  oItems.RefDoc,//oSalesOrder.DocNumber, // validar la posicion que se debe cambiar por el pedido de cambio.
+                RefDocIt : oItems.ItmNumberFather || "" , 
                 RefDocCa : 'L',
                 ProfitCtr : oItems.ProfitCtr,
                 PckgNo : iCount.toString().padStart(10,'0'),

@@ -100,7 +100,6 @@
                 rows="{mCreateOrder>/oSalesOrder/ToItems/results}"
                 selectionMode="MultiToggle"
                 rowActionCount="1">
-                <!-- rows="{mCreateOrder>/oDetailSalesDocument/items}" -->
                 <t:rowMode>
                     <rowmodes:Auto  />
                 </t:rowMode>
@@ -130,6 +129,9 @@
                         />
                     </OverflowToolbar>
                 </t:extension>
+                <t:rowSettingsTemplate>
+                    <t:RowSettings highlight="{= !!${mCreateOrder>ItmNumberFather} ? 'Warning' : 'None' }" highlightText="Posicion editada" />
+                </t:rowSettingsTemplate>
                 <t:columns >
                     <t:Column width="6rem" hAlign="Center" >
                         <Text text="{i18n>pos}" />
