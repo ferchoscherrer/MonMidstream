@@ -113,10 +113,16 @@ export default class DetailSalesDocument extends Controller {
             });
 
             const arrSalesOrderItems =  oResponse.ToItems["results"];
-
+            const arrSalesConditions = oResponse.ToConditions["results"];
             for (const oItem of arrSalesOrderItems) {
                 oItem.editQuantity = false;
                 oItem.TargetValCalculate = (oItem.NetValue * parseFloat(oQueryData.iFactor)).toFixed(2);
+                // modify Conditions
+                this.onCalculateConditionByItems(
+                    oItem.ItmNumber,
+                    oItem.TargetValCalculate,
+                    arrSalesConditions
+                );
             }
             
             this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
@@ -383,7 +389,7 @@ export default class DetailSalesDocument extends Controller {
         }
 
         iCalculateAmountExceeded = iNetValue - iCalculateModifiedValuePartititionByItem;
-        arrPartitionByItem[0].NetValue = (parseFloat(arrPartitionByItem[0].NetValue) +  iCalculateAmountExceeded).toString();
+        arrPartitionByItem[0].NetValue = (parseFloat(arrPartitionByItem[0].NetValue) +  iCalculateAmountExceeded).toFixed(2);
         this.oCreateOrderModel.setProperty("/iNetValuePartititionByItem", iNetValue);
         this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", iNetValue);
         this.oCreateOrderModel.setProperty("/sUMBPartititionByItem", oSelectItem.TargetQu);
@@ -766,7 +772,7 @@ export default class DetailSalesDocument extends Controller {
             Division: oSalesOrder.Division,
             DocType: 'ZL6',//oSalesOrder.DocType,
             Currency: oSalesOrder.Currency,
-            PurchNoC: '',//"sefsf", //no esta
+            PurchNoC: oSalesOrder.PurchNo,//"sefsf", //no esta
             PurchDate: oSalesOrder.PurchDate,
             Ref1: oSalesOrder.Ref1, //no esta
             RefDoc: oSalesOrder.DocNumber,
@@ -799,7 +805,7 @@ export default class DetailSalesDocument extends Controller {
                 interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
                 partition: oItems.partition || false,
-                NetValueItem: Number(oItems.NetValue) 
+                NetValueItem: Number(oItems.NetValue)
             };
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
@@ -829,7 +835,8 @@ export default class DetailSalesDocument extends Controller {
                     oItems.ItmNumberFather || "" , 
                     oItems.ItmNumber, 
                     oItems.CondUnit,
-                    sGrPrice
+                    // sGrPrice
+                    oItems.TargetValCalculate.toString()
                 ),
                 SalesServicesSet: oServiceByItem.data
             }
@@ -863,20 +870,29 @@ export default class DetailSalesDocument extends Controller {
             ZEK4: "ZK4P",
             ZEK5: "ZK5P",
         };
+
         for (const oSalesConditions of arrFilterConditionByItems) {
             let sCondType = bIsEdition ?
                 oSalesConditions.CondType :
                 oMapCondType[oSalesConditions.CondType] ?? '';
 
+            let valueConditionByPercentage = 0;
+
             if (bIsEdition && !Object.values(oMapCondType).includes(sCondType)) continue;
             if (sCondType === "" || oSalesConditions.Condvalue <= 0) continue;
 
-            conditionByItems.push({
+            if(oSalesConditions.CondPercentage) 
+                valueConditionByPercentage = Number(oSalesConditions.CondPercentage) * Number(sCondValue);
+
+            conditionByItems.push({                
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
                 CondStNo: oSalesConditions.CondStNo,
                 CondCount: oSalesConditions.CondCount,
                 CondType: sCondType,
-                CondValue: (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString(), //sCondValue ?? oSalesConditions.CondValue,
+                CondValue: valueConditionByPercentage.toString(),
+                // (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString(), //sCondValue ?? oSalesConditions.CondValue,
+                // ammountUpdateByCondition.toString(),
+                // 
                 Currency: oSalesConditions.Currency,
                 CondUnit: sCondUnit,
                 CondPUnt: oSalesConditions.CondPUnt,
@@ -885,13 +901,21 @@ export default class DetailSalesDocument extends Controller {
                 Numconvert: oSalesConditions.Numconvert,
                 Denominato: oSalesConditions.Denominato,
                 Accountkey: oSalesConditions.Accountkey,
-                Condvalue : (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString() //sCondValue ?? oSalesConditions.CondValue,
+                Condvalue : valueConditionByPercentage.toString()
+                // (oSalesConditions.Condvalue * parseFloat(ifactorcond)).toString() //sCondValue ?? oSalesConditions.CondValue,
             });
         }
         return conditionByItems;
     }
 
-    public getServicesByItem( {iFactor, sPackageNumber, iterator, interatorSubPackage, partition, NetValueItem}: ServiceByItem ) {
+    public getServicesByItem( {
+        iFactor, 
+        sPackageNumber, 
+        iterator, 
+        interatorSubPackage, 
+        partition, 
+        NetValueItem  
+        }: ServiceByItem ) {
         const arrServices: Service[] = structuredClone(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`));
 
         const setSubPackages = new Set<string>();
@@ -918,6 +942,7 @@ export default class DetailSalesDocument extends Controller {
         const iGrPriceFromPartition = NetValueItem / arrFlatternServicesHierarchy.length;
         const oInfoERP: SalesServicesERP[] = arrFlatternServicesHierarchy.map(oService => {
             const sGrPrice = partition ? iGrPriceFromPartition * iFactor : Number(oService.GrPrice) * iFactor;
+            const percentageService = sGrPrice / NetValueItem;
             return {
                 PckgNo: oService.PckgNo,
                 LineNo: oService.LineNo,
@@ -928,7 +953,8 @@ export default class DetailSalesDocument extends Controller {
                 SubpckgNo: oService.SubpckgNo,
                 Service: oService.Service,
                 ExtServ: oService.ExtServ,
-                Quantity: oService.Quantity,
+                Quantity: percentageService.toFixed(2),
+                // oService.Quantity,
                 BaseUom: oService.BaseUom,
                 UomIso: oService.UomIso,
                 PriceUnit: oService.PriceUnit,
@@ -1152,4 +1178,24 @@ export default class DetailSalesDocument extends Controller {
         }
         return arrSalesItems;
     }
+    
+    public onCalculateConditionByItems(
+        itmNumberKeyByItem : string, 
+        targetValue: string,
+        arrSalesConditions: ServicesConditions[]
+    ) {
+
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+        let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
+            (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
+        );
+        
+        for (const oSalesConditions of arrFilterConditionByItems) {
+            if (oSalesConditions.Condvalue <= 0) continue;
+
+            const percentageCondition =   Number(oSalesConditions.Condvalue) / Number(targetValue); 
+            oSalesConditions.CondPercentage = percentageCondition.toFixed(2);
+        }
+    }
+
 }

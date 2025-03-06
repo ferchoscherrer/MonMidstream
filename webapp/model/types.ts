@@ -293,7 +293,8 @@ export interface ServicesConditions {
   Condincomp: boolean
   Condconfig: boolean
   Condchaman: boolean,
-  Accountkey: string
+  Accountkey: string,
+  CondPercentage?: string
 }
 
 export interface Service {
