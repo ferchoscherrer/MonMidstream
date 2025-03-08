@@ -65,6 +65,24 @@
                                 unit="{mCreateOrder>/sUMBPartititionByItem}" 
                             />
                         </GenericTag>
+
+                        <GenericTag text="{i18n>amountforAssign}" status="Warning" class="sapUiTinyMarginBeginEnd">
+                            <ObjectNumber 
+                                number="{
+                                    path:'mCreateOrder>/iCalculateAmountForAssing',
+                                    type:'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        groupingEnabled: true,
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingSeparator: '.',
+                                        decimalSeparator: ','
+                                    }
+                                }"
+                                unit="{mCreateOrder>/sUMBPartititionByItem}" 
+                            />
+                        </GenericTag>    
+
                     </FlexBox>
                 </OverflowToolbar>
             </subHeader>
