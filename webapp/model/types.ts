@@ -236,9 +236,10 @@ export interface ItemOrder {
   PriceRefLong: string
   DocCatSdLong: string
   editQuantity: boolean
-  TargetValCalculate: number,
+  TargetValCalculate: number
   ItmNumberFather?: string
   partition?: boolean
+  quantityPartition?: number
 }
 
 
@@ -546,7 +547,8 @@ export interface ServiceByItem {
   interatorSubPackage: number,
   iFactor: number,
   partition: boolean,
-  NetValueItem: number
+  NetValueItem: number,
+  iQuantityPartitionByItem: number
 }
 
 

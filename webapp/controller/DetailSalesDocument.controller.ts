@@ -367,7 +367,8 @@ export default class DetailSalesDocument extends Controller {
 
     public onCalculatePartition() : void {
         const oSelectItem = this.onSelectItem();
-        const iNumberPartition =  parseFloat(this.oCreateOrderModel.getProperty("/iQuantityPartition")) + 1;
+        const iQuantityPartitionByItem = Number(this.oCreateOrderModel.getProperty("/iQuantityPartition"));
+        const iNumberPartition =  iQuantityPartitionByItem + 1;
         const iNetValue = parseFloat(oSelectItem.NetValue); 
         const iNetValueByPartition = iNetValue / iNumberPartition;
         const arrOrderItems = this.oCreateOrderModel.getProperty('/oSalesOrder/ToItems/results');
@@ -383,6 +384,9 @@ export default class DetailSalesDocument extends Controller {
             oSelectItemByPartition.partition = true;
             let iLengthArrPartitionByItem = arrPartitionByItem.length;
             let iCalculatePosition  = 0;
+
+            if (i===0) oSelectItemByPartition.quantityPartition = iQuantityPartitionByItem;
+            
             if (i !== 0)  {
                 oSelectItemByPartition.ItmNumberFather = oSelectItemByPartition.ItmNumber;
                 iCalculatePosition = (iLengthOrderItems + iLengthArrPartitionByItem) * 10;
@@ -816,7 +820,8 @@ export default class DetailSalesDocument extends Controller {
                 interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
                 partition: oItems.partition || false,
-                NetValueItem: Number(oItems.NetValue)
+                NetValueItem: Number(oItems.NetValue),
+                iQuantityPartitionByItem: oItems.quantityPartition || 0
             };
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
@@ -927,7 +932,8 @@ export default class DetailSalesDocument extends Controller {
         iterator, 
         interatorSubPackage, 
         partition,
-        NetValueItem  
+        NetValueItem,
+        iQuantityPartitionByItem
         }: ServiceByItem ) {
         const arrServices: Service[] = structuredClone(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`));
                 debugger
@@ -1154,7 +1160,8 @@ export default class DetailSalesDocument extends Controller {
                 interatorSubPackage: iCountSubPackage,
                 sPackageNumber: oItems.PckgNo,
                 partition: oItems.partition || false,
-                NetValueItem: Number(oItems.NetValue) 
+                NetValueItem: Number(oItems.NetValue),
+                iQuantityPartitionByItem: oItems.quantityPartition || 0
             };
 
             if (oItems.partition) 
