@@ -1,0 +1,376 @@
+[33mcommit 3601695a97b0afac9113dee32791cf5018f77a21[m[33m ([m[1;36mHEAD -> [m[1;32mfeature/services_hierarchy[m[33m)[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Apr 21 19:12:45 2025 +0000
+
+    ultimo
+
+[33mcommit 8cee4ba81a9de2cce9ff6425edcc3ab8e4660475[m[33m ([m[1;31morigin/feature/services_hierarchy[m[33m)[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Sat Mar 8 17:33:47 2025 +0000
+
+    Add property <<quantityPartitionByItem>> when partitioning
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit f6eebfeda06ac863c7562577923d02a0f30b762d[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Sat Mar 8 17:03:49 2025 +0000
+
+    Cuando no se este editando no se hace el calculo inicial  del porcentaje en las condiciones y se suben cambios del mexicano
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 684d01baa4651f6480ad02c079de9d08e2ab43ec[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Mar 6 06:12:50 2025 +0000
+
+    Create calculation of percentage in services and Validation of the calculation process under the conditions
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit d31f894328ce264c0fdbd95ba99729c90b1150ae[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Fri Feb 28 04:20:50 2025 +0000
+
+    feat: Added logic
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit ea1beff5b63260d2605aa7933f550d7cb05c7b58[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 25 06:21:27 2025 +0000
+
+    Add validation condition type
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit afda46b096c49f14316d5bf7f1bef9a03193bd55[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 25 05:51:31 2025 +0000
+
+    Add condition type validation when user is editing of sales orders
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit c2330347fd1b577832ebe6d3168a81e6aa32769e[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 25 05:06:32 2025 +0000
+
+    Modyfied structure of edit sales order
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit aa22ff5ff62873a78471180ddb035faac6b8e75f[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 25 04:23:13 2025 +0000
+
+    Desabled factor fieeld  and fixed the position service
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 6eef025b71a545dfc439c40c71d3ea1d008927bc[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 25 03:07:19 2025 +0000
+
+    Fixed by the Mexican
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 50cca550e734c097a548c25ff308aad18ebda7c3[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Feb 20 06:42:14 2025 +0000
+
+    feat: New changes from services hierarhcy
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 936272f4890e0e17b8472e1b2cdbded3bed501a3[m[33m ([m[1;31morigin/feature/services[m[33m, [m[1;32mfeature/services[m[33m)[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Feb 20 02:01:09 2025 +0000
+
+    feat: Added changes from fernando
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 09ab266d114e6fe018bfa12d658e82e2fb835e8d[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Feb 19 05:34:23 2025 +0000
+
+    feat: Add logic to the service value  when it is of a partitioned item
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 963671ef348ed6eef8b73de3d949be02404f7b61[m
+Merge: b97ac8c 01b29e7
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Feb 17 01:45:54 2025 +0000
+
+    merged with main
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 01b29e7bacd2858a2d26310f9be860b9ec16c4ab[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: f4671ff cfc3856
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Mon Feb 17 01:45:05 2025 +0000
+
+    Merge branch 'feature/modify_sales_order' into 'main'
+    
+    Create sales functionality for  modified order
+    
+    See merge request triiari/retro-billing!1
+
+[33mcommit b97ac8cfc7ba153c3ae4f90bab47b70f3b2d2dfc[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Feb 17 01:41:05 2025 +0000
+
+    feat: Added logic for service
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit cfc3856800332fcc41fc01813c9dfb5026043313[m[33m ([m[1;31morigin/feature/modify_sales_order[m[33m, [m[1;32mfeature/modify_sales_order[m[33m)[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Feb 12 05:59:33 2025 +0000
+
+    feat: Added message in modify
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 355f1c800c2f22a37723eb8c3365454e29f69f14[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Feb 12 05:55:26 2025 +0000
+
+    feat: Added logic for sending service on creation
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 1d313f2e58b0cf62f96c1aee930469af4bab0bb2[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Feb 11 06:42:02 2025 +0000
+
+    Add service logic to send to ERP
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit ac48a2c74177b4d7e9c81bdca2e715689ed8d7f0[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Fri Feb 7 03:15:18 2025 +0000
+
+    Modify ERP structure when modifying a sales order
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 04f44291ea26509e0cdc44247c4733c9f496f97c[m
+Merge: c008b1f f4671ff
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Fri Feb 7 02:18:57 2025 +0000
+
+    Resolve when merging main branch
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit c008b1f07ab4a1057e06687a6dfc9704f46f7f0f[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Feb 6 06:50:42 2025 +0000
+
+    Create sales functionality for  modified order
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit f4671ff8f3b7d19d5db6739058669dd0050ca834[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Feb 6 06:28:18 2025 +0000
+
+    feat: Added logic for services
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit e65fd3b7db3fc649c3795620a8234495ac89bd9e[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Feb 6 02:59:32 2025 +0000
+
+    feat: Added logic from Fernando
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit f87248e3250f0ed38c85ee22798f232acc969054[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Feb 5 02:20:16 2025 +0000
+
+    fixed partnumb
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 90f37c19d9a7088a267ad10172ed30a22457ff34[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Feb 3 22:51:16 2025 +0000
+
+    Create ERP call  for Sales Order creation
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 5174dc542889ad333518a1c5257534292542bc00[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Feb 3 05:00:09 2025 +0000
+
+    feat: Added tree table to services view
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 24018f34350be851d1a2a4f02aee8eb03025ccc2[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Sun Feb 2 01:47:35 2025 +0000
+
+    Create functionality create order
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 156a62b9c6a96b0edaa858fe326dc227c532e6b0[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Sun Jan 26 04:14:09 2025 +0000
+
+    build the query view to modify the order
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit e4d2673dbb282f6d085c4bd13de9347c34532796[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Jan 23 03:57:51 2025 +0000
+
+    Create method ERP create data and fixed issue in calculate partition net value
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 759f5081072890766edfed0177bb398068b7666f[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Jan 22 08:06:20 2025 +0000
+
+    Se crea funcionalidad de particiones y actualicacion del precio actualizado en la tabla principal
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit e3afd80d47e8ef98a67fdbd18e2a99b92d4a64ec[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Jan 21 07:19:05 2025 +0000
+
+    change namespace namespace xmlns:table by xmlns:t
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 0a438ba2f59398bdf5118c9b7068f5e3fe3c06a3[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Jan 21 07:13:28 2025 +0000
+
+    Add functuonality to re-calculate position number when remove rows or adding a new item, and creates the copy functionality
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 6a34f9f7c244b25925e3d67764946e84d90abafc[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Tue Jan 21 02:05:58 2025 +0000
+
+    Change service request and add filter in this service
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 83465c7a896b39bf292570a61b02f8c788b17558[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Jan 15 05:55:12 2025 +0000
+
+    feat: Added busy
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit e4590ce65b1d74b7e0b2aef8ede3cf5afae11881[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Jan 15 04:41:44 2025 +0000
+
+    feat: Added logic for currency and clear filters
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 2cb28b95b75d4f5ab35556127b1af664dff3b6d0[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Jan 15 03:32:17 2025 +0000
+
+    feat: Added logic for routing
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 4187eb4077f5e89b52ad18bf2f79daae747c0d1b[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Fri Jan 10 05:22:23 2025 +0000
+
+    Validate general filter of catalogs and estimate number
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit ec98c57c3c2eda3e579b116e7ccf987baebe2967[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Thu Jan 9 16:11:34 2025 +0000
+
+    Add oData SalesOrderSet in estimate number fragmnet
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 44b6f8d2f79b570143d93120a1c1337931843c14[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Wed Jan 8 05:29:30 2025 +0000
+
+    Add sales order query functionality and configuration of actions in the detail table
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 8e61d8bb98f042f91641b35ed619634792e96a3e[m
+Author: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+Date:   Mon Jan 6 23:42:24 2025 +0000
+
+    feat: Added changes
+    
+    Signed-off-by: Ricardo Espinal <ricardo.espinal@triariisystems.com>
+
+[33mcommit 21ef570d7bc913d3c91720828d22cd1a9a601186[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Wed Dec 11 06:40:55 2024 +0000
+
+    Add destination of application and configurations in the query view
+    
+    Signed-off-by: Jorge Sanabria <jorgesanux13@gmail.com>
+
+[33mcommit 2715e87c4c47d0e6a16e3786a5595b2c20ca12b0[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Wed Dec 11 03:13:07 2024 +0000
+
+    refactor: Refactored code to remove positions
+    
+    Signed-off-by: Jorge Sanabria <jorgesanux13@gmail.com>
+
+[33mcommit 3c730f570d2d68943a0ff9444ef4128badd785bb[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Fri Dec 6 07:10:58 2024 +0000
+
+    Remove items table position
+    
+    Signed-off-by: Jorge Sanabria <jorgesanux13@gmail.com>
+
+[33mcommit 1ba8ffb92d3a0581f96b4b2c5bc19ab5d7db7a74[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Wed Dec 4 06:24:54 2024 +0000
+
+    feat: Added a lot of views
+    
+    Signed-off-by: Jorge Sanabria <jorgesanux13@gmail.com>
+
+[33mcommit 9fe5a87dc855d5f7f26ab5a2ce216cc3d5507cd6[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Tue Dec 3 06:51:27 2024 +0000
+
+    Initial Configuration
+    
+    Signed-off-by: Jorge Sanabria <jorgesanux13@gmail.com>
+
+[33mcommit 16c911c317a601cd3f7599b535022e38715b0b15[m
+Author: Jorge Sanabria <jorgesanux13@gmail.com>
+Date:   Tue Dec 3 01:54:57 2024 +0000
+
+    Initial commit
