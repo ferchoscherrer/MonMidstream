@@ -57,7 +57,7 @@
                             }" 
                         />
                         <Label text="{i18n>request}" />
-                        <Text text="" />
+                        <Text text="{mCreateOrder>/oSalesOrder/SoldTo}" />
                         <Label text="{i18n>request}" />
                         <Text text="{mCreateOrder>/oSalesOrder/SoldTo}"/>
                         <Label text="{i18n>orderNoCustomer}" />
@@ -116,15 +116,20 @@
                         <Title text="{i18n>items} ({= ${mCreateOrder>/oSalesOrder/ToItems/results}.length })" />
                         <ToolbarSpacer/>
                         <!-- <Button text="{i18n>create}" press="." type="Emphasized" icon="sap-icon://create"/> -->
+
+                         <!-- 
                         <Button text="{i18n>edit}" press=".editSelectedPositions" type="Emphasized" icon="sap-icon://edit"
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}"
                         />
+                        -->
+                         <!-- 
                         <Button text="{i18n>delete}" press=".onConfirmRemovePosition" type="Emphasized" icon="sap-icon://decline"
                             enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocument/enabled}"
                         />
+                        -->
                         <ToolbarSeparator />
                         <!-- onOpenPositionPartitioning -->
-                        <Button press=".onConfirmCopyPosition" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
+                        <Button text="{i18n>copy}" press=".onConfirmCopyPosition" enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" 
                             type="Default" icon="sap-icon://copy" tooltip="{i18n>copy}"
                         />
                     </OverflowToolbar>
@@ -220,6 +225,20 @@
                         </t:template>
                     </t:Column>
 
+                    <t:Column >
+                        <Text text="{i18n>refdoc}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>RefDoc'}"/>
+                        </t:template>
+                    </t:Column>
+
+                    <t:Column >
+                        <Text text="{i18n>refpos}"/>
+                        <t:template >
+                            <Text text="{path: 'mCreateOrder>PosnrVor'}"/>
+                        </t:template>
+                    </t:Column>
+
                 </t:columns>
                 <t:noData>
                     <IllustratedMessage
@@ -235,7 +254,7 @@
                 <ToolbarSpacer />
                 <Button type="Reject" text="{i18n>cancel}" press=".onClose" icon="sap-icon://undo"  />
                 <Button type="Accept" text="{i18n>createOrder}" visible="{=!${mCreateOrder>/bModify}}" press=".onCreateOrder" icon="sap-icon://create-form"  />
-                <Button type="Accept" text="{i18n>edit}" visible="{mCreateOrder>/bModify}" press=".onModifyOrder" icon="sap-icon://request" />
+                <Button type="Accept" text="{i18n>edit}" visible="{mCreateOrder>/bModify}"  enabled="{mCreateOrder>/oConfig/oAcctionTblItemSalesDocumentSingle/enabled}" press=".onModifyOrder" icon="sap-icon://request" />
             </OverflowToolbar>
         </f:footer>
     </f:DynamicPage>

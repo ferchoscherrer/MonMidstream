@@ -900,7 +900,7 @@ export default class DetailSalesDocument extends Controller {
             if(oSalesConditions.CondPercentage) 
                //valueConditionByPercentage = Number(oSalesConditions.CondPercentage) * Number(sCondValue);
                 valueConditionByPercentage = Number(oSalesConditions.CondPercentage) * oSalesConditions.Condvalue;
-            debugger
+            
 
             conditionByItems.push({                
                 ItmNumber: itmNumberKeyChildByItem,//oSalesConditions.ItmNumber,
@@ -936,7 +936,7 @@ export default class DetailSalesDocument extends Controller {
         iQuantityPartitionByItem
         }: ServiceByItem ) {
         const arrServices: Service[] = structuredClone(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`));
-                debugger
+                
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
             const bMatched = oService.PckgNo === sPackageNumber || setSubPackages.has(oService.PckgNo);
@@ -962,7 +962,9 @@ export default class DetailSalesDocument extends Controller {
         const oInfoERP: SalesServicesERP[] = arrFlatternServicesHierarchy.map(oService => {
             //const sGrPrice = partition ? iGrPriceFromPartition * iFactor : Number(oService.GrPrice) * iFactor;
             const sGrPrice = partition ? Number(oService.Quantity) * iFactor : Number(oService.GrPrice) * iFactor;
+            //const sGrPrice2 = partition ? Number(oService.Quantity) / Number(iQuantityPartitionByItem) : oService.Quantity;
             const percentageService = sGrPrice / NetValueItem;
+   
             return {
                 PckgNo: oService.PckgNo,
                 LineNo: oService.LineNo,
@@ -1214,7 +1216,7 @@ export default class DetailSalesDocument extends Controller {
         targetValue: string,
         arrSalesConditions: ServicesConditions[]
     ) {
-        debugger
+       
 
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
         let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
