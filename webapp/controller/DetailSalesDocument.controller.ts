@@ -1252,88 +1252,108 @@ debugger // se agrega debbug para error nov 2025
     // PEGAR ESTO ANTES DE LA ÚLTIMA LLAVE '}' DEL ARCHIVO
     // --------------------------------------------------------------------------------------
 
+    
+
+    // --------------------------------------------------------------------------------------
+    // LÓGICA DE PEGADO MANUAL (SOLUCIÓN PARA INPUTS EDITABLES)
+    // --------------------------------------------------------------------------------------
+
     private _attachPasteProvider(): void {
-        // Buscamos la tabla por el ID "tblPartitioning" (Asegúrate de haber puesto este ID en el XML)
-        let oTable = this.byId("tblPartitioning") as any;
+        const oTable = this.byId("tblPartitioning") as any;
+        if (!oTable) return;
 
-        // Si no encontramos la tabla o ya tiene el plugin, salimos para no duplicar
-       if (!oTable) {
-             // Busca todos los controles que terminen en "tblPartitioning"
-             const aControls = sap.ui.getCore().byFieldGroupId([]); // Truco para buscar, o usar jQuery
-             // Mejor usamos el ID compuesto si sabemos el ID de la vista
-             const sFullId = this.getView()?.createId("tblPartitioning");
-             if (sFullId) oTable = sap.ui.getCore().byId(sFullId);
-        }
+        // Usamos un flag para no agregar el evento múltiples veces
+        if (oTable.data("pasteAttached")) return;
 
-        // Creamos el plugin y lo conectamos a la función onPasteData
-        const oPasteProvider = new PasteProvider({
-            paste: this.onPasteData.bind(this)
+        oTable.addEventDelegate({
+            onAfterRendering: () => {
+                const $Table = oTable.$();
+                // Limpiamos cualquier listener previo
+                $Table.off("paste");
+                // Adjuntamos el evento 'paste' al DOM de la tabla
+                $Table.on("paste", (oEvent: any) => {
+                    this._handleCustomPaste(oEvent);
+                });
+            }
         });
 
-        oTable.addDependent(oPasteProvider);
+        oTable.data("pasteAttached", true);
     }
 
-    public onPasteData(oEvent: PasteProvider$PasteEvent): void {
-        const aData = oEvent.getParameter("data"); // Datos del Excel
-        const oModel = this.oCreateOrderModel;
-        const aCurrentItems = oModel.getProperty("/arrPartitionByItem") as any[];
+    private _handleCustomPaste(oEvent: any): void {
+        const oOriginalEvent = oEvent.originalEvent;
+        // Obtener datos del portapapeles (compatible con Chrome, Edge, Firefox)
+        const clipboardData = oOriginalEvent.clipboardData || (window as any).clipboardData;
+        const sPastedData = clipboardData ? clipboardData.getData('Text') : "";
 
-        if (!aData || aData.length === 0 || !aCurrentItems) {
-            return;
-        }
+        if (!sPastedData) return;
 
-        // --- NUEVO: DETECTAR FILA DE INICIO ---
+        // IMPORTANTE: Evitamos que el navegador pegue todo el texto en el Input actual
+        oEvent.preventDefault();
+
+        // 1. Detectar en qué fila estamos (Contexto de inicio)
         let iStartIndex = 0;
         
-        // Obtenemos el control que tiene el foco (donde hiciste clic)
-        const sFocusedId = sap.ui.getCore().getCurrentFocusedControlId ? sap.ui.getCore().getCurrentFocusedControlId() : "";
-        const oFocusedControl = sap.ui.getCore().byId(sFocusedId);
-
-        if (oFocusedControl) {
-            // Buscamos el contexto de esa fila en el modelo
-            const oContext = oFocusedControl.getBindingContext("mCreateOrder");
+        // Buscamos el control SAPUI5 asociado al elemento donde ocurrió el evento
+        const oTargetControl = jQuery(oEvent.target).control(0) as any;
+        
+        if (oTargetControl && oTargetControl.getBindingContext) {
+            const oContext = oTargetControl.getBindingContext("mCreateOrder");
             if (oContext) {
-                // Extraemos el índice del path (ej: "/arrPartitionByItem/3" -> 3)
+                // Extraemos el índice del path (ej: .../arrPartitionByItem/5 -> 5)
                 const sPath = oContext.getPath();
-                const sIndex = sPath.split("/").pop(); 
-                const iParsedIndex = parseInt(sIndex || "0", 10);
-                if (!isNaN(iParsedIndex)) {
-                    iStartIndex = iParsedIndex;
-                }
+                const sIndex = sPath.split("/").pop();
+                iStartIndex = parseInt(sIndex || "0", 10);
             }
         }
-        // --------------------------------------
 
-        // Recorremos los datos pegados
-        for (let i = 0; i < aData.length; i++) {
-            // Calculamos la fila destino: Inicio + i
+        // 2. Procesar los datos (Excel usa \t para columnas y \n para filas)
+        // Filtramos líneas vacías que Excel a veces deja al final
+        const aRows = sPastedData.split(/\r\n|\n|\r/).filter((r: string) => r.trim() !== "");
+
+        const oModel = this.oCreateOrderModel;
+        const aCurrentItems = oModel.getProperty("/arrPartitionByItem") as any[];
+        let bChanged = false;
+
+        for (let i = 0; i < aRows.length; i++) {
             const iTargetIndex = iStartIndex + i;
+            
+            // Si nos pasamos del total de filas, paramos
+            if (iTargetIndex >= aCurrentItems.length) break;
 
-            // Si nos salimos del total de filas existentes, paramos
-            if (iTargetIndex >= aCurrentItems.length) {
-                break; 
-            }
+            const sRow = aRows[i];
+            // Si copiaste varias columnas, tomamos solo la primera (índice 0)
+            const aCols = sRow.split("\t"); 
+            const sValue = aCols[0]; 
 
-            const rowData = aData[i];
-            const sPastedAmount = rowData[0]; // Primera columna del Excel
+            if (sValue) {
+                // Lógica de limpieza numérica
+                // 1. Eliminar puntos de miles (ej: 1.500 -> 1500) asumiendo formato ES/DE
+                // 2. Reemplazar coma decimal por punto (ej: 1500,50 -> 1500.50)
+                // Ajusta esta lógica según el formato de tu Excel (US vs ES)
+                
+                // Opción A: Formato Excel "1.234,56" (Punto miles, Coma decimal)
+                let sCleanValue = sValue.replace(/\./g, "").replace(",", "."); 
+                
+                // Opción B: Si tu Excel está en formato US "1,234.56", usa esto en su lugar:
+                // let sCleanValue = sValue.replace(/,/g, ""); 
 
-            // Limpieza y conversión
-            if (sPastedAmount) {
-                const sCleanValue = sPastedAmount.replace(/[^0-9.,-]/g, ""); 
-                // Reemplaza coma por punto si es necesario
-                const fAmount = parseFloat(sCleanValue.replace(',', '.')); 
+                // Limpieza final de caracteres no numéricos
+                sCleanValue = sCleanValue.replace(/[^0-9.-]/g, "");
+
+                const fAmount = parseFloat(sCleanValue);
 
                 if (!isNaN(fAmount)) {
-                    aCurrentItems[iTargetIndex].NetValue = fAmount; 
+                    aCurrentItems[iTargetIndex].NetValue = fAmount;
+                    bChanged = true;
                 }
             }
         }
 
-        oModel.refresh(true);
-        
-        // Recalcular totales
-        if (typeof this.onCalculateAmountAssignedPartitionByItem === "function") {
-             this.onCalculateAmountAssignedPartitionByItem();
+        if (bChanged) {
+            oModel.refresh(true);
+            // Recalcular totales
+            this.onCalculateAmountAssignedPartitionByItem();
         }
     }
 
