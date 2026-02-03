@@ -32,6 +32,7 @@ import MessageView from "sap/m/MessageView";
 import MessageItem from "sap/m/MessageItem";
 import Bar from "sap/m/Bar";
 import Title from "sap/m/Title";
+import PasteProvider, { PasteProvider$PasteEvent } from "sap/m/plugins/PasteProvider";
 
 interface DetailRouteArg {
     estimationNumber: string,
@@ -146,6 +147,7 @@ export default class DetailSalesDocument extends Controller {
         this.getView()?.addDependent(this.oFragmentPositionPartitioning);
 
         this.oFragmentPositionPartitioning.open();
+        this._attachPasteProvider();
     }
 
     public onPositionPartitioning() {
@@ -814,6 +816,8 @@ export default class DetailSalesDocument extends Controller {
 
         for (const oItems of arrItems) {
 
+            
+
             const serviceByItem : ServiceByItem = {
                 iFactor: oQueryData.iFactor,
                 iterator: iCount,
@@ -957,6 +961,9 @@ export default class DetailSalesDocument extends Controller {
         } = this.restartPackageNumbersServicesHierarchy(arrBaseServicesHierarchy, iterator, interatorSubPackage);
         const arrFlatternServicesHierarchy = this.flattenServiceHierarchy(arrRestartedServicesHierarchy);
         
+
+        debugger
+
         // const iGrPriceFromPartition = NetValueItem / arrFilteredServices.length;
         const iGrPriceFromPartition = NetValueItem / arrFlatternServicesHierarchy.length;
         const oInfoERP: SalesServicesERP[] = arrFlatternServicesHierarchy.map(oService => {
@@ -1172,6 +1179,7 @@ export default class DetailSalesDocument extends Controller {
                     oItems.TargetValCalculate.toString(), 
                     arrSalesConditions
                 )
+debugger // se agrega debbug para error nov 2025
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
             const sGrPrice = oServiceByItem.data.find(oService => Number(oService.GrPrice) !== 0)?.GrPrice ?? "0";
@@ -1211,13 +1219,14 @@ export default class DetailSalesDocument extends Controller {
         return arrSalesItems;
     }
     
+
+
     public onCalculateConditionByItems(
         itmNumberKeyByItem : string, 
         targetValue: string,
         arrSalesConditions: ServicesConditions[]
     ) {
        
-
         const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
         let arrFilterConditionByItems: ServicesConditions[] = arrSalesConditions.filter( 
             (oConditions : ServicesConditions) => oConditions.ItmNumber === itmNumberKeyByItem
@@ -1232,5 +1241,102 @@ export default class DetailSalesDocument extends Controller {
             // oSalesConditions.CondPercentage = percentageCondition.toFixed(2);
         }
     }
+
+
+
+// ... aquí terminaba tu función onCalculateConditionByItems ...
+    //    }
+    // }  <-- NO pegues después de esta llave final, sino ANTES de ella.
+
+    // --------------------------------------------------------------------------------------
+    // PEGAR ESTO ANTES DE LA ÚLTIMA LLAVE '}' DEL ARCHIVO
+    // --------------------------------------------------------------------------------------
+
+    private _attachPasteProvider(): void {
+        // Buscamos la tabla por el ID "tblPartitioning" (Asegúrate de haber puesto este ID en el XML)
+        let oTable = this.byId("tblPartitioning") as any;
+
+        // Si no encontramos la tabla o ya tiene el plugin, salimos para no duplicar
+       if (!oTable) {
+             // Busca todos los controles que terminen en "tblPartitioning"
+             const aControls = sap.ui.getCore().byFieldGroupId([]); // Truco para buscar, o usar jQuery
+             // Mejor usamos el ID compuesto si sabemos el ID de la vista
+             const sFullId = this.getView()?.createId("tblPartitioning");
+             if (sFullId) oTable = sap.ui.getCore().byId(sFullId);
+        }
+
+        // Creamos el plugin y lo conectamos a la función onPasteData
+        const oPasteProvider = new PasteProvider({
+            paste: this.onPasteData.bind(this)
+        });
+
+        oTable.addDependent(oPasteProvider);
+    }
+
+    public onPasteData(oEvent: PasteProvider$PasteEvent): void {
+        const aData = oEvent.getParameter("data"); // Datos del Excel
+        const oModel = this.oCreateOrderModel;
+        const aCurrentItems = oModel.getProperty("/arrPartitionByItem") as any[];
+
+        if (!aData || aData.length === 0 || !aCurrentItems) {
+            return;
+        }
+
+        // --- NUEVO: DETECTAR FILA DE INICIO ---
+        let iStartIndex = 0;
+        
+        // Obtenemos el control que tiene el foco (donde hiciste clic)
+        const sFocusedId = sap.ui.getCore().getCurrentFocusedControlId ? sap.ui.getCore().getCurrentFocusedControlId() : "";
+        const oFocusedControl = sap.ui.getCore().byId(sFocusedId);
+
+        if (oFocusedControl) {
+            // Buscamos el contexto de esa fila en el modelo
+            const oContext = oFocusedControl.getBindingContext("mCreateOrder");
+            if (oContext) {
+                // Extraemos el índice del path (ej: "/arrPartitionByItem/3" -> 3)
+                const sPath = oContext.getPath();
+                const sIndex = sPath.split("/").pop(); 
+                const iParsedIndex = parseInt(sIndex || "0", 10);
+                if (!isNaN(iParsedIndex)) {
+                    iStartIndex = iParsedIndex;
+                }
+            }
+        }
+        // --------------------------------------
+
+        // Recorremos los datos pegados
+        for (let i = 0; i < aData.length; i++) {
+            // Calculamos la fila destino: Inicio + i
+            const iTargetIndex = iStartIndex + i;
+
+            // Si nos salimos del total de filas existentes, paramos
+            if (iTargetIndex >= aCurrentItems.length) {
+                break; 
+            }
+
+            const rowData = aData[i];
+            const sPastedAmount = rowData[0]; // Primera columna del Excel
+
+            // Limpieza y conversión
+            if (sPastedAmount) {
+                const sCleanValue = sPastedAmount.replace(/[^0-9.,-]/g, ""); 
+                // Reemplaza coma por punto si es necesario
+                const fAmount = parseFloat(sCleanValue.replace(',', '.')); 
+
+                if (!isNaN(fAmount)) {
+                    aCurrentItems[iTargetIndex].NetValue = fAmount; 
+                }
+            }
+        }
+
+        oModel.refresh(true);
+        
+        // Recalcular totales
+        if (typeof this.onCalculateAmountAssignedPartitionByItem === "function") {
+             this.onCalculateAmountAssignedPartitionByItem();
+        }
+    }
+
+// } <--- Esta es la llave final de la clase que ya tienes en tu archivo
 
 }

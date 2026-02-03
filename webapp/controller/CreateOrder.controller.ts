@@ -18,7 +18,8 @@ import BusyIndicator from "sap/ui/core/BusyIndicator";
 import ERP from "com/triiari/retrobilling/modules/ERP";
 import ODataModel from "sap/ui/model/odata/v2/ODataModel";
 import EventBus from "sap/ui/core/EventBus";
-
+import PasteProvider from "sap/m/plugins/PasteProvider";
+import { PasteProvider$PasteEvent } from "sap/m/plugins/PasteProvider";
 
 /**
  * @namespace com.triiari.retrobilling.controller
