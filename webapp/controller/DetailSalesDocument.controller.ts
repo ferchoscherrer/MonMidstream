@@ -99,6 +99,9 @@ export default class DetailSalesDocument extends Controller {
         
     }
 
+
+    //inicio febrero 2026
+    /*
     public async onQuerySalesOrder(sSalesOrder: string ): Promise<void> {
         try {
             BusyIndicator.show(0);
@@ -109,7 +112,7 @@ export default class DetailSalesDocument extends Controller {
             const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
                 DocNumber: sSalesOrder
             });
-           
+           debugger
             const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, undefined, { 
                 $expand: 'ToItems,ToConditions,ToPartners,ToServices' 
             });
@@ -136,6 +139,61 @@ export default class DetailSalesDocument extends Controller {
             BusyIndicator.hide();
         }
     }
+        */
+        //fin febrero 2026
+
+        // webapp/controller/DetailSalesDocument.controller.ts
+
+public async onQuerySalesOrder(sSalesOrder: string): Promise<void> {
+    try {
+        BusyIndicator.show(0);
+
+        const oQueryData = this.oCreateOrderModel.getProperty('/oQuery');
+        // Detectamos si estamos en modo edición (QueryModifyOrder) o creación
+        const bIsEdition = this.oCreateOrderModel.getProperty('/bModify');
+
+        const sEntityWithKeys = ERP.generateEntityWithKeys('/SalesOrderHeaderSet', {
+            DocNumber: sSalesOrder
+        });
+
+        const { data: oResponse } = await ERP.readDataKeysERP(sEntityWithKeys, this.ZSD_SALES_GET_DOC_SRV, undefined, { 
+            $expand: 'ToItems,ToConditions,ToPartners,ToServices' 
+        });
+
+        /*
+        if (bIsEdition && oResponse?.ToServices?.results) {
+            oResponse.ToServices.results = oResponse.ToServices.results.filter((oService: any) => {
+                // Convertimos QUANTITY a número para manejar decimales de SAP
+                const nQty = parseFloat(oService.Quantity || 0);
+                // Retornamos true solo para las líneas que tienen valor >= 0.1
+                return nQty >= 0.1;
+            });
+        }
+            */
+        const arrSalesOrderItems = oResponse.ToItems["results"];
+        const arrSalesConditions = oResponse.ToConditions["results"];
+        
+        for (const oItem of arrSalesOrderItems) {
+            oItem.editQuantity = false;
+            oItem.TargetValCalculate = (oItem.NetValue * parseFloat(oQueryData.iFactor)).toFixed(2);
+            if (bIsEdition) continue;
+            this.onCalculateConditionByItems(
+                oItem.ItmNumber,
+                oItem.TargetValCalculate,
+                arrSalesConditions
+            );
+        }
+        
+        // Se actualiza el modelo con la data filtrada (solo en edición)
+        this.oCreateOrderModel.setProperty('/oSalesOrder', oResponse);
+
+    } catch (oError: any) {
+        const sErrorMessageDefault = this.oI18n.getText("errorEstimateNumber");
+        MessageBox.error(oError.statusCode ? sErrorMessageDefault : oError.message);
+    } finally {
+        BusyIndicator.hide();
+    }
+}
 
     public async onOpenPositionPartitioning(): Promise<void> {
         this.oFragmentPositionPartitioning ??= await Fragment.load({
@@ -940,6 +998,9 @@ export default class DetailSalesDocument extends Controller {
         iQuantityPartitionByItem
         }: ServiceByItem ) {
         const arrServices: Service[] = structuredClone(this.oCreateOrderModel.getProperty(`/oSalesOrder/ToServices/results`));
+        //inicio Febrero 2026
+        const bIsEdition = this.oCreateOrderModel.getProperty('/bModify');
+        //Fin Febrero 2026
                 
         const setSubPackages = new Set<string>();
         const arrFilteredServices = arrServices.filter(oService => {
@@ -959,16 +1020,38 @@ export default class DetailSalesDocument extends Controller {
             ultimoSubpckg,
             arregloAjustado: arrRestartedServicesHierarchy
         } = this.restartPackageNumbersServicesHierarchy(arrBaseServicesHierarchy, iterator, interatorSubPackage);
-        const arrFlatternServicesHierarchy = this.flattenServiceHierarchy(arrRestartedServicesHierarchy);
-        
-
+        // inicio febrero 2026
+        //const arrFlatternServicesHierarchy = this.flattenServiceHierarchy(arrRestartedServicesHierarchy);
+        let arrFlatternServicesHierarchy = this.flattenServiceHierarchy(arrRestartedServicesHierarchy);
+          
+        // --- CAMBIO REMARCADO: FILTRADO ANTES DE MAPEAR EL JSON DE ENVÍO ---
         debugger
+    if (bIsEdition) {
+        arrFlatternServicesHierarchy = arrFlatternServicesHierarchy.filter((oService: any) => {
+            // Validamos contra Quantity (nombre común en el modelo)
+            const sRawQty = String(oService.Quantity || "0").replace(",", ".").trim();
+            const nQty = Math.round(parseFloat(sRawQty) * 1000) / 1000;
+           const bIsServiceLine = !!oService.Service && oService.Service !== "" && oService.Service !== "0";
+           const bIsValidService = bIsServiceLine ? (nQty > 0.2) : true;
+            return bIsValidService;
+        });
+    }
+     // fin febrero 2026
 
         // const iGrPriceFromPartition = NetValueItem / arrFilteredServices.length;
         const iGrPriceFromPartition = NetValueItem / arrFlatternServicesHierarchy.length;
         const oInfoERP: SalesServicesERP[] = arrFlatternServicesHierarchy.map(oService => {
             //const sGrPrice = partition ? iGrPriceFromPartition * iFactor : Number(oService.GrPrice) * iFactor;
-            const sGrPrice = partition ? Number(oService.Quantity) * iFactor : Number(oService.GrPrice) * iFactor;
+
+            //FMS cambio para descartar la particion 05/02/2026 INICIO//
+            const fCurrentQty = Number(oService.Quantity || 0);
+            const bIsSmallQty = fCurrentQty < 0.100;
+            //const sGrPrice = partition ? Number(oService.Quantity) * iFactor : Number(oService.GrPrice) * iFactor;
+            const sGrPrice = (partition && !bIsSmallQty) 
+                ? Number(oService.Quantity) * iFactor // Lógica de Partición (Solo si es >= 0.100)
+                : fCurrentQty * iFactor;              // Lógica Estándar (Si no hay partición o es < 0.100)
+            //FMS cambio para descartar la particion 05/02/2026 FIN//
+            
             //const sGrPrice2 = partition ? Number(oService.Quantity) / Number(iQuantityPartitionByItem) : oService.Quantity;
             const percentageService = sGrPrice / NetValueItem;
    
@@ -1179,7 +1262,7 @@ export default class DetailSalesDocument extends Controller {
                     oItems.TargetValCalculate.toString(), 
                     arrSalesConditions
                 )
-debugger // se agrega debbug para error nov 2025
+//debugger // se agrega debbug para error nov 2025
 
             let oServiceByItem = this.getServicesByItem(serviceByItem);
             const sGrPrice = oServiceByItem.data.find(oService => Number(oService.GrPrice) !== 0)?.GrPrice ?? "0";
@@ -1242,20 +1325,9 @@ debugger // se agrega debbug para error nov 2025
         }
     }
 
-
-
-// ... aquí terminaba tu función onCalculateConditionByItems ...
-    //    }
-    // }  <-- NO pegues después de esta llave final, sino ANTES de ella.
-
-    // --------------------------------------------------------------------------------------
-    // PEGAR ESTO ANTES DE LA ÚLTIMA LLAVE '}' DEL ARCHIVO
-    // --------------------------------------------------------------------------------------
-
     
-
     // --------------------------------------------------------------------------------------
-    // LÓGICA DE PEGADO MANUAL (SOLUCIÓN PARA INPUTS EDITABLES)
+    // LÓGICA DE PEGADO MANUAL (SOLUCIÓN PARA INPUTS EDITABLES) ---INICIO
     // --------------------------------------------------------------------------------------
 
     private _attachPasteProvider(): void {
@@ -1288,7 +1360,7 @@ debugger // se agrega debbug para error nov 2025
 
         if (!sPastedData) return;
 
-        // IMPORTANTE: Evitamos que el navegador pegue todo el texto en el Input actual
+        // Evitamos que el navegador pegue todo el texto en el Input actual
         oEvent.preventDefault();
 
         // 1. Detectar en qué fila estamos (Contexto de inicio)
@@ -1308,7 +1380,7 @@ debugger // se agrega debbug para error nov 2025
         }
 
         // 2. Procesar los datos (Excel usa \t para columnas y \n para filas)
-        // Filtramos líneas vacías que Excel a veces deja al final
+    
         const aRows = sPastedData.split(/\r\n|\n|\r/).filter((r: string) => r.trim() !== "");
 
         const oModel = this.oCreateOrderModel;
@@ -1318,25 +1390,23 @@ debugger // se agrega debbug para error nov 2025
         for (let i = 0; i < aRows.length; i++) {
             const iTargetIndex = iStartIndex + i;
             
-            // Si nos pasamos del total de filas, paramos
+            // Si se pasa del total de filas, paramos
             if (iTargetIndex >= aCurrentItems.length) break;
 
             const sRow = aRows[i];
-            // Si copiaste varias columnas, tomamos solo la primera (índice 0)
+            // Si se copia varia columnas, tomamos solo la primera (índice 0)
             const aCols = sRow.split("\t"); 
             const sValue = aCols[0]; 
 
             if (sValue) {
                 // Lógica de limpieza numérica
                 // 1. Eliminar puntos de miles (ej: 1.500 -> 1500) asumiendo formato ES/DE
-                // 2. Reemplazar coma decimal por punto (ej: 1500,50 -> 1500.50)
-                // Ajusta esta lógica según el formato de tu Excel (US vs ES)
-                
+                // 2. Reemplazar coma decimal por punto (ej: 1500,50 -> 1500.50)                
                 // Opción A: Formato Excel "1.234,56" (Punto miles, Coma decimal)
-                let sCleanValue = sValue.replace(/\./g, "").replace(",", "."); 
+                //let sCleanValue = sValue.replace(/\./g, "").replace(",", "."); 
                 
-                // Opción B: Si tu Excel está en formato US "1,234.56", usa esto en su lugar:
-                // let sCleanValue = sValue.replace(/,/g, ""); 
+                // Opción B: Formato US "1,234.56"
+                 let sCleanValue = sValue.replace(/,/g, ""); 
 
                 // Limpieza final de caracteres no numéricos
                 sCleanValue = sCleanValue.replace(/[^0-9.-]/g, "");
@@ -1356,7 +1426,9 @@ debugger // se agrega debbug para error nov 2025
             this.onCalculateAmountAssignedPartitionByItem();
         }
     }
+    // --------------------------------------------------------------------------------------
+    // LÓGICA DE PEGADO MANUAL (SOLUCIÓN PARA INPUTS EDITABLES) ---- Fin
+    // --------------------------------------------------------------------------------------
 
-// } <--- Esta es la llave final de la clase que ya tienes en tu archivo
 
 }
