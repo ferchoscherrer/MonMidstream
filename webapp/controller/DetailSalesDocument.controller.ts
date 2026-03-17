@@ -464,7 +464,7 @@ public async onQuerySalesOrder(sSalesOrder: string): Promise<void> {
         this.oCreateOrderModel.setProperty("/arrPartitionByItem", arrPartitionByItem);
         this.oCreateOrderModel.refresh(true);
     }
-
+/* incio mejora de funcion 
     public onCalculateAmountAssignedPartitionByItem() : void{
         const arrPartitionByItem = this.oCreateOrderModel.getProperty("/arrPartitionByItem");
         const iNetValuePartititionByItem = parseFloat(this.oCreateOrderModel.getProperty("/iNetValuePartititionByItem"));
@@ -491,7 +491,39 @@ public async onQuerySalesOrder(sSalesOrder: string): Promise<void> {
         this.oCreateOrderModel.refresh(true);
 
     }
+    */ //fin mejora de funcion
 
+    public onCalculateAmountAssignedPartitionByItem(): void {
+    const arrPartitionByItem = this.oCreateOrderModel.getProperty("/arrPartitionByItem");
+    const iNetValueOriginal = parseFloat(this.oCreateOrderModel.getProperty("/iNetValuePartititionByItem"));
+
+    let iTotalAsignado = 0;
+
+    // Sumamos los valores actuales de la tabla de partición
+    arrPartitionByItem.forEach((oItem: any) => {
+        iTotalAsignado += parseFloat(oItem.NetValue) || 0;
+    });
+
+    // Redondeamos a 2 decimales para evitar errores de precisión de JavaScript (ej. 0.1 + 0.2)
+    const iDiferencia = Number((iNetValueOriginal - iTotalAsignado).toFixed(2));
+    
+    // CORRECCIÓN: El botón se habilita SOLO si la diferencia es exactamente 0
+    // Ni más (excedido), ni menos (faltante).
+    const bEsExacto = iDiferencia === 0;
+
+    this.oCreateOrderModel.setProperty("/oConfig/oAcctionTblItemPartition/enabled", bEsExacto);
+
+    // Actualización de montos visuales en el fragmento
+    this.oCreateOrderModel.setProperty("/iCalculateModifiedValuePartititionByItem", iTotalAsignado.toFixed(2));
+    
+    // Si la diferencia es negativa, significa que nos pasamos (Excedido)
+    this.oCreateOrderModel.setProperty("/iCalculateAmountExceeded", iDiferencia < 0 ? Math.abs(iDiferencia).toFixed(2) : '');
+    
+    // Si la diferencia es positiva, falta dinero por asignar (Por asignar)
+    this.oCreateOrderModel.setProperty("/iCalculateAmountForAssing", iDiferencia > 0 ? iDiferencia.toFixed(2) : '');
+
+    this.oCreateOrderModel.refresh(true);
+}
     public convertServicesToHierarchy(arrServices: Service[]): Service[] {
         const oMapLevelsServices: Record<string, Service> = {};
         const arrRoots = [];
